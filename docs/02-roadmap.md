@@ -17,12 +17,12 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 0.2 | Design spec and blueprint ([01](01-design-spec.md), [blueprint](design/blueprint.html)), home layout approved | ✅ |
 | 0.3 | Art tests (32px, superseded) and asset sources ([03](03-asset-sources.md)), 16×16 grid | ✅ |
 
-## Phase 1: Setup
+## Phase 1: Setup (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 1.1 | Install the Flutter SDK, connect the Android SDK, accept licenses, create an emulator, `flutter doctor` all green | flutter-device-testing | ⏳ |
-| 1.2 | Create the Flutter project, add packages (flame, riverpod, go_router, drift, flutter_local_notifications, fl_chart), set up folder structure and lint rules, `git init` | flutter-architecture, flutter-state-management | ⬜ |
-| 1.3 | App shell: 4-tab nav (Farm, Tasks, Shop, Progress) plus header routes, running on the emulator | flutter-navigation, flutter-device-testing | ⬜ |
+| 1.1 | Install the Flutter SDK, connect the Android SDK, accept licenses, create an emulator, `flutter doctor` all green | flutter-device-testing | ✅ |
+| 1.2 | Create the Flutter project, add packages (flame, riverpod, go_router, drift, flutter_local_notifications, fl_chart), set up folder structure and lint rules, `git init` | flutter-architecture, flutter-state-management | ✅ |
+| 1.3 | App shell: 4-tab nav (Farm, Tasks, Shop, Progress) plus header routes, running on the emulator | flutter-navigation, flutter-device-testing | ✅ |
 
 ## Phase 2: Art & UI kit
 | Step | What | Skills | Status |
