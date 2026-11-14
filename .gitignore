@@ -1,0 +1,24 @@
+# Flutter / Dart (app/ has its own .gitignore too)
+app/build/
+app/.dart_tool/
+**/.flutter-plugins-dependencies
+
+# Python
+__pycache__/
+*.pyc
+
+# Agent tooling (installed per machine, has its own licenses)
+.claude/
+.agents/
+skills-lock.json
+
+# Third-party reference image composites (mood reference, not ours to publish)
+docs/design/art-test/comparison.png
+docs/design/art-test/house-comparison.png
+
+# CraftPix raw packs must never be committed as raw files (license: no redistribution of source files)
+assets/craftpix-raw/
+
+# OS
+Thumbs.db
+.DS_Store

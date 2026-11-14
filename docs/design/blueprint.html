@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cultiva Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#efe4cc; --paper:#f8eed6; --paper2:#f3e6c8; --ink:#3b2a1e; --ink2:#7a6450;
+  --wood:#9c6b3f; --woodD:#6b4426; --teal:#2f8f8a; --tealD:#226b67; --terra:#d0673f;
+  --grass:#6db356; --line:#c9b58e;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;padding:24px 16px 64px}
+h1,h2,h3,.px{font-family:"Pixelify Sans",monospace}
+header{max-width:1280px;margin:0 auto 24px}
+header h1{font-size:40px;margin:0;color:var(--tealD)}
+header p{margin:6px 0 0;color:var(--ink2);max-width:720px}
+.screens{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+.col{width:300px}
+.col h2{font-size:18px;margin:0 0 8px;color:var(--ink)}
+.note{font-size:13px;color:var(--ink2);margin:10px 2px 0;line-height:1.45}
+.note b{color:var(--ink)}
+.phone{width:300px;height:620px;border-radius:34px;background:#1d1712;padding:10px;box-shadow:0 10px 30px #0003}
+.scr{width:100%;height:100%;border-radius:26px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column;position:relative}
+.hud{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 8px;background:var(--tealD);color:#fff}
+.hud .px{font-size:13px}
+.chip{background:#0003;border-radius:8px;padding:3px 8px;font-family:"Pixelify Sans";font-size:13px}
+.coin{display:inline-block;width:9px;height:9px;background:#f2c14e;box-shadow:inset -2px -2px 0 #c98f22;margin-right:4px;vertical-align:-1px}
+canvas.pix{image-rendering:pixelated;image-rendering:crisp-edges;display:block;width:100%}
+.drawer{flex:1;background:var(--paper2);border-top:3px solid var(--woodD);border-radius:14px 14px 0 0;margin-top:-8px;position:relative;padding:6px 12px 0;overflow:hidden}
+.grab{width:40px;height:4px;background:var(--line);border-radius:2px;margin:2px auto 6px}
+.grp{font-family:"Pixelify Sans";font-size:12px;color:var(--ink2);margin:4px 0 3px}
+.task{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:4px 6px;border-radius:6px}
+.task.hl{background:#2f8f8a22;outline:1.5px solid var(--teal)}
+.task .dot{width:10px;height:10px;border-radius:2px;flex:none}
+.task .meta{margin-left:auto;font-size:11px;color:var(--ink2)}
+.bar{height:5px;background:#0001;border-radius:3px;overflow:hidden;width:44px}
+.bar i{display:block;height:100%;background:var(--teal)}
+.tabs{display:flex;background:var(--woodD);padding:6px 6px 10px}
+.tabs div{flex:1;text-align:center;color:#e9d7b5;font-family:"Pixelify Sans";font-size:11px;padding-top:4px}
+.tabs div.on{color:#fff}
+.tabs i{display:block;width:18px;height:18px;margin:0 auto 2px;border-radius:4px;background:#e9d7b555}
+.tabs .on i{background:var(--terra)}
+.panel{background:var(--paper2);border:2px solid var(--woodD);border-radius:8px;box-shadow:inset 0 0 0 2px var(--paper),0 3px 0 var(--woodD);padding:10px;margin:10px 12px 0}
+.panel h3{margin:0 0 6px;font-size:14px}
+.btn{font-family:"Pixelify Sans";background:var(--wood);color:#fff;border:2px solid var(--woodD);border-radius:6px;padding:7px 10px;font-size:13px;box-shadow:0 3px 0 var(--woodD);text-align:center}
+.btn.alt{background:var(--paper);color:var(--ink)}
+.btn.teal{background:var(--teal);border-color:var(--tealD);box-shadow:0 3px 0 var(--tealD)}
+.focus{background:linear-gradient(#2a3d52,#3e5a63);color:#fff}
+.timer{font-family:"Pixelify Sans";font-size:56px;text-align:center;margin:6px 0 0}
+.moods{display:flex;gap:6px;margin-top:6px}
+.moods span{flex:1;height:26px;border-radius:6px;background:var(--paper);border:1.5px solid var(--line);display:grid;place-items:center;font-size:15px}
+.moods .on{border-color:var(--terra);background:#d0673f22}
+.chart{display:flex;align-items:flex-end;gap:7px;height:70px;margin-top:4px}
+.chart div{flex:1;background:var(--teal);border-radius:3px 3px 0 0;position:relative}
+.chart div.today{background:var(--terra)}
+.days{display:flex;gap:7px;font-size:10px;color:var(--ink2);margin-top:3px}
+.days span{flex:1;text-align:center}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px}
+.cal canvas{border-radius:3px;border:1px solid var(--line)}
+.shopgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 12px;overflow:hidden}
+.item{background:var(--paper2);border:2px solid var(--line);border-radius:8px;padding:6px 4px;text-align:center;font-size:11px}
+.item canvas{width:48px;margin:0 auto 3px}
+.item .p{font-family:"Pixelify Sans";font-size:12px}
+.item.own{border-color:var(--teal)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--paper);border:1.5px solid var(--line);border-radius:6px;padding:6px 8px}
+.stat b{font-family:"Pixelify Sans";font-size:20px;display:block;color:var(--tealD)}
+.stat span{font-size:11px;color:var(--ink2)}
+.row{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border:0}
+.hud2{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 8px;background:var(--tealD)}
+.hbtn{width:44px;height:44px;border-radius:10px;background:var(--paper);border:2px solid var(--woodD);display:grid;place-items:center;position:relative;box-shadow:0 2px 0 var(--woodD)}
+.hbtn canvas{width:34px}
+.lv{position:absolute;bottom:-6px;right:-6px;background:var(--terra);color:#fff;font:600 11px "Pixelify Sans";border-radius:6px;padding:0 4px;border:1.5px solid var(--woodD)}
+.cal{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;gap:1px}
+.cal b{font:600 9px "Pixelify Sans";color:var(--terra)}
+.cal span{font:700 18px "Pixelify Sans";color:var(--ink)}
+.pill{background:#0003;color:#fff;border-radius:20px;padding:7px 12px;font:13px "Pixelify Sans";display:flex;gap:8px;align-items:center}
+.farmwrap{position:relative;flex:1;overflow:hidden}
+.plotlabel{position:absolute;font:600 10px "Pixelify Sans";background:var(--wood);color:#fff;border:2px solid var(--woodD);border-radius:4px;padding:1px 5px;letter-spacing:.3px}
+.badge{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--terra);color:#fff;font:700 10px Nunito;display:grid;place-items:center;border:2px solid #fff}
+.bubble{position:absolute;background:#fff;color:var(--ink);font:700 11px Nunito;padding:4px 8px;border-radius:8px;border:2px solid var(--woodD);white-space:nowrap}
+.bubble:after{content:"";position:absolute;right:22px;bottom:-8px;border:4px solid transparent;border-top-color:var(--woodD)}
+.nextup{margin:6px 10px 8px;background:var(--terra);color:#fff;border:2px solid #8a3a20;box-shadow:0 3px 0 #8a3a20;border-radius:10px;padding:8px 12px;font:13px "Pixelify Sans";display:flex;gap:8px;align-items:center;min-height:44px}
+section.sys{max-width:1280px;margin:48px auto 0}
+section.sys h2{font-size:24px;margin:0 0 12px;color:var(--tealD)}
+.strip{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.card{background:var(--paper);border:2px solid var(--line);border-radius:10px;padding:14px}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.sw div{width:64px;font-size:10.5px;color:var(--ink2)}
+.sw i{display:block;height:36px;border-radius:6px;margin-bottom:3px;border:1px solid #0002}
+.stages{display:flex;flex-wrap:wrap;gap:14px}
+.stages div{text-align:center;font-size:12px;color:var(--ink2)}
+.stages canvas{width:64px;background:#8a5a3b;border-radius:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Cultiva · v1 Blueprint</h1>
+  <p>Low-fidelity layout of every v1 screen. Pixel art here is a rough placeholder drawn in code; the final art uses a <b>16×16 grid</b> (CraftPix packs plus custom Cultiva sprites); the capybara will be replaced by the founder's design. Colours, fonts and layout follow <b>docs/01-design-spec.md</b>.</p>
+</header>
+
+<div class="screens">
+
+  <!-- FARM -->
+  <div class="col">
+    <h2>1 · Farm (home)</h2>
+    <div class="phone"><div class="scr">
+      <div class="hud2">
+        <div class="hbtn" aria-label="Profile"><canvas class="pix" id="hudAvatar" width="22" height="16"></canvas><span class="lv">3</span></div>
+        <div class="pill"><span><span class="coin"></span>240</span><span style="opacity:.5">|</span><span>5/12 today</span></div>
+        <div class="hbtn cal" aria-label="Calendar"><b>NOV</b><span>14</span></div>
+      </div>
+      <div class="farmwrap">
+        <canvas class="pix" id="farm" width="192" height="300"></canvas>
+        <span class="plotlabel" style="left:5%;top:31.3%">DAILY 2/6</span>
+        <span class="plotlabel" style="left:5%;top:56.3%">TO-DO &amp; HABITS 2/6</span>
+        <span class="badge" style="left:34.5%;top:5%">1</span>
+        <div class="bubble" style="right:3%;top:41%">2 crops are ripe!</div>
+      </div>
+      <div class="nextup"><span>▶</span><span>Next up: <b>Read · 30 min</b></span></div>
+      <div class="tabs"><div class="on"><i></i>Farm</div><div><i></i>Tasks</div><div><i></i>Shop</div><div><i></i>Progress</div></div>
+    </div></div>
+    <p class="note">Founder's sketch: <b>profile</b> top-left, <b>calendar</b> top-right, <b>barn</b> (Storage) and <b>home</b> on top, a path, and <b>two stacked plots</b> of 6 plants each. <b>Added:</b> a coins and progress pill, plot signs with counts, a harvest badge on the barn, a talking capybara, a pond and decoration spot, and a <b>Next up</b> button within thumb reach.</p>
+  </div>
+
+  <!-- FOCUS -->
+  <div class="col">
+    <h2>2 · Focus Mode</h2>
+    <div class="phone"><div class="scr focus">
+      <div style="padding:16px 16px 0;display:flex;justify-content:space-between;align-items:center"><span class="px" style="font-size:13px;opacity:.8">PLOT A · TOMATO</span><span class="px" style="font-size:13px">✕</span></div>
+      <h3 class="px" style="text-align:center;font-size:22px;margin:18px 0 0">Read 30 min</h3>
+      <canvas class="pix" id="focusPlant" width="48" height="48" style="width:190px;margin:22px auto 0"></canvas>
+      <div class="timer">18:42</div>
+      <div style="margin:10px 32px 0;height:10px;background:#ffffff22;border-radius:5px;overflow:hidden"><div style="width:38%;height:100%;background:#7ec0dd"></div></div>
+      <p style="text-align:center;font-size:12px;opacity:.75;margin:8px 0 0">Stage 2 of 4 · sprout → young at 50%</p>
+      <div style="display:flex;gap:10px;margin:26px 22px 0"><div class="btn teal" style="flex:1">Pause</div><div class="btn alt" style="flex:1">Give up</div></div>
+      <p style="text-align:center;font-size:12px;margin:16px 0 0;text-decoration:underline;opacity:.8">I already did it (½ coins)</p>
+    </div></div>
+    <p class="note">Opened by tapping a <b>Plot A</b> plant. The plant grows in real time with the countdown. When the timer ends, the plant ripens and is harvested with a coin burst. The timer keeps running from timestamps if the app is closed.</p>
+  </div>
+
+  <!-- JOURNAL -->
+  <div class="col">
+    <h2>3 · Progress (calendar &amp; journal)</h2>
+    <div class="phone"><div class="scr">
+      <div class="hud"><span class="px">Journal</span><span class="chip">This week 31 ✓</span></div>
+      <div class="panel">
+        <h3>Today · Sat 14 Nov</h3>
+        <div style="font-size:12px;line-height:1.5">🌾 5 harvested · ⏱ 50 focus min · <span class="coin"></span>62</div>
+        <div class="moods"><span>😞</span><span>😕</span><span>🙂</span><span class="on">😊</span><span>🤩</span></div>
+        <div style="margin-top:6px;font-size:12px;background:var(--paper);border:1.5px solid var(--line);border-radius:6px;padding:6px;color:var(--ink2)">Finished chapter 4, rainy walk ☔</div>
+      </div>
+      <div class="panel">
+        <h3>This week</h3>
+        <div class="chart"><div style="height:55%"></div><div style="height:80%"></div><div style="height:40%"></div><div style="height:90%"></div><div style="height:70%"></div><div style="height:30%"></div><div class="today" style="height:58%"></div></div>
+        <div class="days"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+      </div>
+      <div class="panel">
+        <h3>November · farm postcards</h3>
+        <div class="cal" id="cal"></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="tabs"><div><i></i>Farm</div><div><i></i>Tasks</div><div><i></i>Shop</div><div class="on"><i></i>Progress</div></div>
+    </div></div>
+    <p class="note">Each day is <b>auto-logged</b> (harvests, focus minutes, coins), and you add a mood and a one-line note. Past days appear as tiny snapshots of your farm; tap one to open that day.</p>
+  </div>
+
+  <!-- SHOP -->
+  <div class="col">
+    <h2>4 · Shop</h2>
+    <div class="phone"><div class="scr">
+      <div class="hud"><span class="px">General Store</span><span class="chip"><span class="coin"></span>240</span></div>
+      <div class="shopgrid" id="shop"></div>
+      <div style="flex:1"></div>
+      <div class="tabs"><div><i></i>Farm</div><div><i></i>Tasks</div><div class="on"><i></i>Shop</div><div><i></i>Progress</div></div>
+    </div></div>
+    <p class="note">v1 sells <b>decorations only</b>, paid for with coins earned from tasks. Buy an item, then place it on the farm. Teal border = already owned.</p>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="col">
+    <h2>5 · Profile (from header avatar)</h2>
+    <div class="phone"><div class="scr">
+      <div class="hud"><span class="px">Profile</span><span class="chip">⚙</span></div>
+      <div style="text-align:center;padding:14px 0 0">
+        <canvas class="pix" id="avatar" width="24" height="20" style="width:120px;margin:0 auto;background:#cfe6b8;border-radius:12px;border:3px solid var(--woodD)"></canvas>
+        <div class="px" style="font-size:20px;margin-top:8px">Farmer Harsha</div>
+        <div style="font-size:12px;color:var(--ink2)">Farming since 1 Nov 2026</div>
+      </div>
+      <div class="panel"><div class="stats">
+        <div class="stat"><b>14</b><span>days active</span></div>
+        <div class="stat"><b>96</b><span>tasks harvested</span></div>
+        <div class="stat"><b>21h</b><span>focus time</span></div>
+        <div class="stat"><b>6/7</b><span>best week</span></div>
+      </div></div>
+      <div class="panel">
+        <div class="row"><span>Day resets at</span><b>4:00 AM</b></div>
+        <div class="row"><span>Daily reminder</span><b>8:30 AM</b></div>
+        <div class="row"><span>Sound</span><b>On</b></div>
+        <div class="row"><span>Haptics</span><b>On</b></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="tabs"><div><i></i>Farm</div><div><i></i>Tasks</div><div><i></i>Shop</div><div><i></i>Progress</div></div>
+    </div></div>
+    <p class="note">Your capybara avatar, lifetime stats and settings. A <b>4 AM day reset</b> means night owls aren't penalised.</p>
+  </div>
+
+  <!-- PLANT SHEET -->
+  <div class="col">
+    <h2>6 · Plant a task (sheet)</h2>
+    <div class="phone"><div class="scr" style="background:#00000055">
+      <div style="flex:1"></div>
+      <div style="background:var(--paper2);border-top:3px solid var(--woodD);border-radius:16px 16px 0 0;padding:12px 14px 18px">
+        <div class="grab"></div>
+        <h3 class="px" style="margin:4px 0 10px;font-size:17px">Plant a task</h3>
+        <div style="font-size:11px;color:var(--ink2)">Task</div>
+        <div style="background:var(--paper);border:1.5px solid var(--line);border-radius:6px;padding:7px;font-size:13px;margin:3px 0 10px">Read</div>
+        <div style="font-size:11px;color:var(--ink2)">Plot</div>
+        <div style="display:flex;gap:6px;margin:3px 0 10px"><div class="btn teal" style="flex:1;font-size:12px">A · Daily</div><div class="btn alt" style="flex:1;font-size:12px">B · To-Do/Habit</div></div>
+        <div style="font-size:11px;color:var(--ink2)">Duration</div>
+        <div style="display:flex;gap:5px;margin:3px 0 10px;font-size:12px"><span class="btn alt" style="padding:4px 7px">5</span><span class="btn alt" style="padding:4px 7px">15</span><span class="btn teal" style="padding:4px 7px">30</span><span class="btn alt" style="padding:4px 7px">45</span><span class="btn alt" style="padding:4px 7px">60</span><span class="btn alt" style="padding:4px 7px">…</span></div>
+        <div style="font-size:11px;color:var(--ink2)">Repeat</div>
+        <div style="display:flex;gap:4px;margin:3px 0 10px;font-size:11px" class="px"><span class="btn teal" style="padding:3px 6px">M</span><span class="btn teal" style="padding:3px 6px">T</span><span class="btn teal" style="padding:3px 6px">W</span><span class="btn teal" style="padding:3px 6px">T</span><span class="btn teal" style="padding:3px 6px">F</span><span class="btn alt" style="padding:3px 6px">S</span><span class="btn alt" style="padding:3px 6px">S</span></div>
+        <div style="font-size:11px;color:var(--ink2)">Crop</div>
+        <div id="crops" style="display:flex;gap:6px;margin:3px 0 14px"></div>
+        <div class="btn" style="font-size:15px">🌱 Plant it</div>
+      </div>
+    </div></div>
+    <p class="note">Opened by tapping empty soil. For <b>Plot A</b> you choose a duration and which days it repeats. For <b>Plot B</b> you choose to-do (one-off) or habit (repeats). The crop choice is cosmetic.</p>
+  </div>
+</div>
+
+<section class="sys">
+  <h2>Design system</h2>
+  <div class="strip">
+    <div class="card">
+      <h3 class="px" style="margin:0 0 10px">Plant growth stages (16×24)</h3>
+      <div class="stages" id="stages"></div>
+    </div>
+    <div class="card">
+      <h3 class="px" style="margin:0 0 10px">Palette</h3>
+      <div class="sw" id="sw"></div>
+    </div>
+    <div class="card" style="max-width:300px">
+      <h3 class="px" style="margin:0 0 10px">Type &amp; UI</h3>
+      <div class="px" style="font-size:22px">Pixelify Sans: 240</div>
+      <div style="font-size:12px;color:var(--ink2);margin-bottom:8px">Headings, numbers, buttons</div>
+      <div style="font-size:15px">Nunito: Read 30 minutes</div>
+      <div style="font-size:12px;color:var(--ink2);margin-bottom:10px">Task names and body text (readable, works with system text size)</div>
+      <div style="display:flex;gap:8px"><div class="btn">Wood</div><div class="btn teal">Teal</div><div class="btn alt">Paper</div></div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ---------- tiny pixel engine ----------
+const C={g1:'#6db356',g2:'#5a9e4b',g3:'#82c46a',soil:'#8a5a3b',soilD:'#6e4630',soilL:'#a06d47',path:'#c9b48a',pathD:'#a8946c',
+water:'#4a90b8',waterL:'#7ec0dd',wood:'#9c6b3f',woodD:'#6b4426',roof:'#2f8f8a',roofD:'#226b67',wall:'#ecdcb6',wallD:'#c9b58e',
+terra:'#d0673f',capy:'#a0703f',capyD:'#7a5230',capyL:'#bb8a55',leaf:'#4fae4a',leafD:'#357a33',dorm:'#9b9070',dormD:'#7a7058',ink:'#3b2a1e',
+gold:'#f2c14e',tree:'#3f8f3f',treeD:'#2e6e33',treeL:'#5cae4c',rock:'#9aa0a6'};
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function P(x,y,w,h,c,ctx){ctx.fillStyle=c;ctx.fillRect(x,y,w,h)}
+const CROPS={tomato:'#e04a3a',carrot:'#e8a33a',eggplant:'#8a5ad0',pumpkin:'#e07a2a',cabbage:'#9ad26a',corn:'#f0d24a'};
+
+function grass(ctx,w,h){P(0,0,w,h,C.g1,ctx);for(let i=0;i<w*h/14;i++){const x=rnd()*w|0,y=rnd()*h|0;P(x,y,1,1,rnd()<.5?C.g2:C.g3,ctx);if(rnd()<.15)P(x,y-1,1,1,C.g2,ctx)}}
+function soil(ctx,x,y,w,h){P(x,y,w,h,C.soil,ctx);P(x,y+h-2,w,2,C.soilD,ctx);P(x,y,w,1,C.soilL,ctx);for(let r=y+5;r<y+h-3;r+=6)for(let i=x+2;i<x+w-2;i+=3)P(i,r,2,1,C.soilD,ctx)}
+// plant at bottom-center (cx,by), stage 0..3 or 'd'
+function plant(ctx,cx,by,stage,crop){const f=CROPS[crop]||C.terra;
+  P(cx-4,by-1,8,2,C.soilD,ctx);
+  if(stage===0){P(cx-3,by-2,6,2,C.soilL,ctx);P(cx-1,by-3,2,1,C.soilL,ctx);P(cx,by-3,1,1,'#d9c08a',ctx);return}
+  if(stage==='d'){P(cx,by-7,1,6,C.dormD,ctx);P(cx-3,by-6,3,1,C.dorm,ctx);P(cx-4,by-5,1,2,C.dorm,ctx);P(cx+1,by-5,3,1,C.dorm,ctx);P(cx+4,by-4,1,2,C.dorm,ctx);P(cx-1,by-8,2,1,C.dorm,ctx);P(cx-2,by-7,1,1,C.dormD,ctx);return}
+  if(stage===1){P(cx,by-5,1,4,C.leafD,ctx);P(cx-2,by-6,2,1,C.leaf,ctx);P(cx+1,by-6,2,1,C.leaf,ctx);P(cx-1,by-5,1,1,C.leaf,ctx);P(cx+1,by-5,1,1,C.leaf,ctx);return}
+  if(stage===2){P(cx,by-11,1,10,C.leafD,ctx);[[-4,-9],[1,-7],[-4,-5],[1,-11]].forEach(([dx,dy])=>{P(cx+dx,by+dy,3,2,C.leaf,ctx);P(cx+dx+(dx<0?0:2),by+dy+1,1,1,C.leafD,ctx)});P(cx-1,by-13,3,2,C.leaf,ctx);return}
+  // ripe
+  P(cx,by-14,1,13,C.leafD,ctx);P(cx-5,by-15,11,10,C.leaf,ctx);P(cx-6,by-12,13,5,C.leaf,ctx);P(cx-4,by-17,9,3,C.leaf,ctx);
+  P(cx-5,by-8,11,2,C.leafD,ctx);P(cx-3,by-16,2,1,'#7ccd62',ctx);P(cx+2,by-13,2,1,'#7ccd62',ctx);
+  [[-4,-11],[1,-14],[2,-9],[-2,-7]].forEach(([dx,dy])=>{P(cx+dx,by+dy,3,3,f,ctx);P(cx+dx,by+dy,1,1,'#fff6',ctx)});
+  P(cx+5,by-19,1,3,C.gold,ctx);P(cx+4,by-18,3,1,C.gold,ctx);P(cx-7,by-16,1,1,'#fff',ctx);
+}
+function stake(ctx,x,y,c){P(x,y,4,3,C.wood,ctx);P(x,y+3,4,0,C.woodD,ctx);P(x+1,y+3,2,3,C.woodD,ctx);P(x+1,y+1,2,1,c||C.wall,ctx)}
+function tree(ctx,x,y){P(x+6,y+14,4,6,C.woodD,ctx);P(x+1,y+3,14,11,C.tree,ctx);P(x+3,y,10,16,C.tree,ctx);P(x,y+6,16,6,C.tree,ctx);P(x+3,y+2,6,4,C.treeL,ctx);P(x+1,y+11,14,3,C.treeD,ctx);P(x+10,y+5,2,2,C.terra,ctx);P(x+4,y+9,2,2,C.terra,ctx)}
+function capy(ctx,x,y,s=1){const p=(a,b,w,h,c)=>P(x+a*s,y+b*s,w*s,h*s,c,ctx);
+  p(1,4,14,6,C.capy);p(0,5,1,4,C.capy);p(13,1,6,7,C.capy);p(12,3,2,5,C.capy);p(14,0,2,2,C.capyD);p(17,0,1,1,C.capyD);
+  p(18,4,2,3,C.capyD);p(19,4,1,1,C.ink);p(16,3,1,1,C.ink);p(2,10,2,2,C.capyD);p(11,10,2,2,C.capyD);p(1,9,14,1,C.capyD);
+  p(3,5,7,1,C.capyL);p(14,2,3,1,C.capyL);p(8,2,4,2,C.terra);p(7,3,6,1,'#b5532f');// little straw hat band -> terra hat
+}
+function house(ctx,x,y){P(x+4,y+18,56,26,C.wall,ctx);P(x+4,y+40,56,4,C.wallD,ctx);
+  for(let i=0;i<20;i++){P(x+i,y+18-i*0.9|0,64-i*2,2,i%3?C.roof:C.roofD,ctx)}
+  P(x,y+16,64,3,C.roofD,ctx);P(x+28,y+28,10,16,C.woodD,ctx);P(x+29,y+29,8,15,C.wood,ctx);P(x+35,y+36,1,2,C.gold,ctx);
+  [[10,26],[44,26]].forEach(([a,b])=>{P(x+a,y+b,10,9,C.woodD,ctx);P(x+a+1,y+b+1,8,7,'#9fd3e6',ctx);P(x+a+4,y+b+1,1,7,C.woodD,ctx);P(x+a+1,y+b+4,8,1,C.woodD,ctx);P(x+a-1,y+b+9,12,2,C.terra,ctx)});
+  P(x+46,y-2,6,10,C.terra,ctx);P(x+45,y-3,8,2,'#a8502f',ctx);}
+function fenceH(ctx,x,y,n){for(let i=0;i<n;i++){P(x+i*6,y,2,7,C.woodD,ctx)}P(x,y+2,n*6-4,2,C.wood,ctx)}
+
+// ---------- FARM ----------
+function barn(ctx,x,y){
+  // walls: terracotta planks
+  for(let i=0;i<56;i++){const c=i<3?'#d0673f':(i%4===0?'#8a3a20':'#b5502e');P(x+4+i,y+22,1,32,c,ctx)}
+  P(x+4,y+52,56,2,'#7a3420',ctx);
+  // gambrel roof (slate)
+  for(let r=0;r<23;r++){const w=r<9?28+r*4:64;const x0=x+32-w/2;P(x0,y+r,w,1,r%3===2?'#4a4e60':'#5b6075',ctx);P(x0,y+r,3,1,'#737990',ctx);P(x0+w-2,y+r,2,1,'#3d4152',ctx)}
+  P(x,y+21,64,2,'#efe3c8',ctx);P(x,y+23,64,1,'#5a3522',ctx);
+  // hayloft
+  P(x+25,y+24,14,8,'#efe3c8',ctx);P(x+27,y+25,10,6,'#3b2a1e',ctx);P(x+28,y+28,8,2,'#e8c46a',ctx);
+  // big doors with X trim
+  P(x+18,y+34,28,20,'#efe3c8',ctx);P(x+20,y+36,24,18,'#7a4b2d',ctx);P(x+31,y+36,2,18,'#efe3c8',ctx);
+  for(let k=0;k<11;k++){P(x+20+k,y+36+k*1.6|0,2,2,'#efe3c8',ctx);P(x+29-k,y+36+k*1.6|0,2,2,'#efe3c8',ctx);P(x+33+k,y+36+k*1.6|0,2,2,'#efe3c8',ctx);P(x+42-k,y+36+k*1.6|0,2,2,'#efe3c8',ctx)}
+  P(x+2,y+54,60,3,C.rock,ctx);P(x+2,y+56,60,1,'#6d7379',ctx);
+}
+(function(){const cv=document.getElementById('farm'),ctx=cv.getContext('2d');seed=11;grass(ctx,192,300);
+  tree(ctx,-6,-8);tree(ctx,84,-10);tree(ctx,178,-6);
+  // path: home door -> right edge -> down along plots
+  const path=(x,y,w,h)=>{P(x,y,w,h,C.path,ctx);for(let i=0;i<w*h/22;i++)P(x+rnd()*(w-3)|0,y+rnd()*(h-2)|0,3,2,C.pathD,ctx)};
+  path(141,62,16,30);path(141,82,48,16);path(171,82,18,210);
+  barn(ctx,8,14);
+  house(ctx,116,18);
+  // plots
+  const plotY=[100,176];
+  plotY.forEach(py=>{soil(ctx,6,py,160,48);P(6,py,160,1,C.leafD,ctx)});
+  const A=[['tomato',3],['carrot',2],['eggplant',1],['cabbage',0],['pumpkin',0],['corn',3]];
+  const B=[['pumpkin',3],['tomato','d'],['cabbage',2],['corn',0],['carrot',3],['eggplant',1]];
+  [[A,plotY[0]],[B,plotY[1]]].forEach(([arr,py])=>arr.forEach(([crop,st],i)=>{const cx=6+13+Math.round(26.6*i),by=py+38;
+     if(i<5)P(6+Math.round(26.6*(i+1)),py+4,1,40,C.soilD,ctx);
+     plant(ctx,cx,by,st,crop);stake(ctx,cx+7,by-5,st==='d'?C.dorm:C.wall)}));
+  // highlight the in-progress plant (Plot A #2)
+  ctx.strokeStyle='#ffffffdd';ctx.lineWidth=1;ctx.strokeRect(6+26.6+1.5,plotY[0]+3.5,24,42);
+  // capybara on the path between plots
+  capy(ctx,166,152,1);
+  // bottom strip: pond + owned decorations + empty deco slot
+  P(10,240,64,36,C.water,ctx);P(4,248,76,20,C.water,ctx);P(14,244,24,2,C.waterL,ctx);P(44,258,18,1,C.waterL,ctx);P(4,266,76,3,'#3a789c',ctx);P(52,250,4,2,'#f0f0f0',ctx);
+  P(98,258,22,3,C.wood,ctx);P(98,254,22,2,C.wood,ctx);P(100,261,2,5,C.woodD,ctx);P(116,261,2,5,C.woodD,ctx); // bench
+  P(130,246,2,20,C.woodD,ctx);P(127,241,8,7,C.ink,ctx);P(128,242,6,5,C.gold,ctx); // lantern
+  ctx.setLineDash([2,2]);ctx.strokeStyle='#ffffffaa';ctx.strokeRect(142.5,246.5,20,20);ctx.setLineDash([]);P(151,252,2,8,'#ffffffaa',ctx);P(148,255,8,2,'#ffffffaa',ctx);
+  fenceH(ctx,4,286,28);
+  [[90,236],[150,72],[4,92],[80,170],[166,240],[92,284]].forEach(([x,y],i)=>{P(x,y,2,2,i%2?'#f6e27a':'#f29bb5',ctx);P(x,y+2,1,2,C.leafD,ctx)});
+})();
+(function(){const ctx=document.getElementById('hudAvatar').getContext('2d');capy(ctx,0,2,1)})();
+
+// ---------- FOCUS plant ----------
+(function(){const ctx=document.getElementById('focusPlant').getContext('2d');P(0,34,48,14,C.soil,ctx);P(0,34,48,1,C.soilL,ctx);P(0,46,48,2,C.soilD,ctx);ctx.save();ctx.translate(0,0);
+  // scale x2 manually
+  const tmp=document.createElement('canvas');tmp.width=24;tmp.height=24;const t=tmp.getContext('2d');plant(t,12,22,2,'tomato');ctx.imageSmoothingEnabled=false;ctx.drawImage(tmp,0,0,24,24,0,-6,48,48);ctx.restore()})();
+
+// ---------- calendar postcards ----------
+(function(){const cal=document.getElementById('cal');for(let d=1;d<=28;d++){const cv=document.createElement('canvas');cv.width=16;cv.height=12;cv.className='pix';const x=cv.getContext('2d');
+  seed=d*97;P(0,0,16,12,d>14?'#e6dcc4':C.g1,x);if(d<=14){P(1,5,6,6,C.soil,x);P(9,5,6,6,C.soil,x);const n=(rnd()*6|0)+1;for(let i=0;i<6;i++){const c=i<n?['#e04a3a','#e8a33a','#8a5ad0',C.leaf][i%4]:C.soilD;P(2+(i%2)*2+(i>3?0:0),6+(i>>1)*2,1,1,c,x);P(10+(i%2)*2,6+(i>>1)*2,1,1,rnd()<.6?c:C.soilD,x)}P(5,0,6,4,C.roof,x);if(d===14){x.strokeStyle=C.terra;x.lineWidth=2;x.strokeRect(0,0,16,12)}}
+  cal.appendChild(cv)}})();
+
+// ---------- shop ----------
+(function(){const items=[['Fence ×4',40,(x)=>{fenceH(x,2,6,4)},1],['Lantern',60,(x)=>{P(7,4,2,12,C.woodD,x);P(5,2,6,5,C.ink,x);P(6,3,4,3,C.gold,x)}],['Bench',90,(x)=>{P(2,8,12,2,C.wood,x);P(2,5,12,2,C.wood,x);P(3,10,2,4,C.woodD,x);P(11,10,2,4,C.woodD,x)}],
+ ['Flower pot',45,(x)=>{P(5,10,6,5,C.terra,x);P(4,9,8,2,'#a8502f',x);P(7,5,1,5,C.leafD,x);P(5,3,3,3,'#f29bb5',x);P(8,4,3,3,'#f6e27a',x)},1],['Scarecrow',150,(x)=>{P(7,4,2,12,C.woodD,x);P(3,7,10,2,C.wood,x);P(5,1,6,4,'#e9d29a',x);P(4,0,8,2,C.terra,x);P(5,9,6,4,C.roof,x)}],['Signpost',35,(x)=>{P(7,5,2,11,C.woodD,x);P(2,3,12,5,C.wood,x);P(4,5,8,1,C.wall,x)}],
+ ['Birdbath',120,(x)=>{P(7,8,2,7,C.rock,x);P(3,6,10,3,C.rock,x);P(4,6,8,1,C.waterL,x);P(5,14,6,2,'#7d8389',x)}],['Bush',30,(x)=>{P(2,6,12,9,C.tree,x);P(4,4,8,4,C.tree,x);P(4,6,4,2,C.treeL,x);P(2,13,12,2,C.treeD,x)}],['Beehive',200,(x)=>{P(4,4,8,10,C.gold,x);P(4,7,8,1,'#c98f22',x);P(4,10,8,1,'#c98f22',x);P(7,11,2,2,C.ink,x);P(3,14,10,2,C.woodD,x)}]];
+  const g=document.getElementById('shop');items.forEach(([n,p,f,own])=>{const d=document.createElement('div');d.className='item'+(own?' own':'');const cv=document.createElement('canvas');cv.width=16;cv.height=16;cv.className='pix';f(cv.getContext('2d'));d.appendChild(cv);d.insertAdjacentHTML('beforeend',`<div>${n}</div><div class="p">${own?'Owned':'<span class=coin></span>'+p}</div>`);g.appendChild(d)})})();
+
+// ---------- avatar ----------
+(function(){const ctx=document.getElementById('avatar').getContext('2d');capy(ctx,1,6,1)})();
+
+// ---------- crop chooser ----------
+(function(){const w=document.getElementById('crops');Object.keys(CROPS).forEach((k,i)=>{const cv=document.createElement('canvas');cv.width=16;cv.height=20;cv.className='pix';cv.style.cssText=`width:34px;background:${C.soil};border-radius:5px;border:2px solid ${i==0?C.teal:'transparent'}`;plant(cv.getContext('2d'),8,19,3,k);w.appendChild(cv)})})();
+
+// ---------- stages strip ----------
+(function(){const s=document.getElementById('stages');[[0,'0 Seed'],[1,'1 Sprout'],[2,'2 Young'],[3,'3 Ripe ✨'],['d','Dormant']].forEach(([st,l])=>{const d=document.createElement('div');const cv=document.createElement('canvas');cv.width=16;cv.height=24;cv.className='pix';plant(cv.getContext('2d'),8,23,st,'tomato');d.appendChild(cv);d.insertAdjacentHTML('beforeend','<div>'+l+'</div>');s.appendChild(d)})})();
+
+// ---------- swatches ----------
+(function(){const s=document.getElementById('sw');[['Teal','#2f8f8a'],['Terracotta','#d0673f'],['Grass','#6db356'],['Soil','#8a5a3b'],['Path','#c9b48a'],['Water','#4a90b8'],['Wood','#9c6b3f'],['Paper','#f3e6c8'],['Ink','#3b2a1e'],['Gold','#f2c14e']].forEach(([n,c])=>s.insertAdjacentHTML('beforeend',`<div><i style="background:${c}"></i>${n}<br>${c}</div>`))})();
+</script>
+</body>
+</html>
