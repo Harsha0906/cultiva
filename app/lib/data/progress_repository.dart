@@ -28,6 +28,13 @@ class ProgressRepository {
             ..where((c) => c.taskId.equals(taskId) & c.day.equals(day.key)))
           .getSingleOrNull();
 
+  /// Ripe-but-unharvested completions from days before [day].
+  Future<List<Completion>> unharvestedBefore(FarmDay day) =>
+      (_db.select(_db.completions)..where(
+            (c) => c.harvestedAt.isNull() & c.day.isSmallerThanValue(day.key),
+          ))
+          .get();
+
   /// Days (from [since]) on which the task was completed (ripened or harvested).
   Future<Set<FarmDay>> doneDays(String taskId, {required FarmDay since}) async {
     final rows =

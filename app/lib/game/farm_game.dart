@@ -66,6 +66,8 @@ class FarmGame extends FlameGame {
       load('capy', '$cultiva/npc/capybara.png'),
       load('sparkle', '$cultiva/fx/sparkle.png'),
       load('coin', '$cultiva/fx/coin.png'),
+      load('leaf', '$cultiva/fx/leaf.png'),
+      load('dust', '$cultiva/fx/dust.png'),
       load('oak', 'sprites/pack/trees/oak_small.png'),
       load('bush', 'sprites/pack/props/bush_dark_small.png'),
       load('fern', 'sprites/pack/props/fern.png'),
@@ -194,6 +196,12 @@ class FarmGame extends FlameGame {
   void update(double dt) {
     super.update(dt);
     _t += dt;
+    for (final p in _parts) {
+      p.age += dt;
+      p.pos += p.vel * dt;
+      p.vel += ui.Offset(0, 70 * dt);
+    }
+    _parts.removeWhere((p) => p.age >= p.life);
     if (reduceMotion) {
       _capyY = 100;
     } else if (_pause > 0) {
@@ -225,6 +233,7 @@ class FarmGame extends FlameGame {
     canvas.drawImage(bg, ui.Offset.zero, _pixel);
     _drawPlants(canvas);
     _drawCapy(canvas);
+    _drawParticles(canvas);
     canvas.restore();
   }
 
@@ -274,6 +283,65 @@ class FarmGame extends FlameGame {
     }
   }
 
+  // ---------------------------------------------------------------- particles
+
+  final _parts = <_Particle>[];
+
+  /// Leaf burst + dust puff at a plant base (art px). No-op under Reduce Motion.
+  void burst(ui.Offset base) {
+    if (reduceMotion) return;
+    for (var i = 0; i < 6; i++) {
+      _parts.add(
+        _Particle(
+          pos: base - const ui.Offset(0, 12),
+          vel: ui.Offset(
+            (_rng.nextDouble() - 0.5) * 50,
+            -35 - _rng.nextDouble() * 30,
+          ),
+          life: 0.7,
+          frame: i % 2,
+        ),
+      );
+    }
+    _parts.add(
+      _Particle(pos: base - const ui.Offset(0, 4), life: 0.45, dust: true),
+    );
+  }
+
+  void _drawParticles(ui.Canvas c) {
+    final leaf = _img['leaf'], dust = _img['dust'];
+    if (leaf == null || dust == null) return;
+    for (final p in _parts) {
+      final fade = (1 - p.age / p.life).clamp(0.0, 1.0);
+      final paint = ui.Paint()
+        ..filterQuality = ui.FilterQuality.none
+        ..color = ui.Color.fromRGBO(255, 255, 255, fade);
+      if (p.dust) {
+        final f = (p.age / p.life * 3).floor().clamp(0, 2);
+        c.drawImageRect(
+          dust,
+          ui.Rect.fromLTWH(f * 10.0, 0, 10, 8),
+          ui.Rect.fromCenter(center: p.pos, width: 10, height: 8),
+          paint,
+        );
+      } else {
+        c.drawImageRect(
+          leaf,
+          ui.Rect.fromLTWH(p.frame * 5.0, 0, 5, 5),
+          ui.Rect.fromCenter(
+            center: ui.Offset(
+              p.pos.dx.roundToDouble(),
+              p.pos.dy.roundToDouble(),
+            ),
+            width: 5,
+            height: 5,
+          ),
+          paint,
+        );
+      }
+    }
+  }
+
   void _emptyMarker(ui.Canvas c, ui.Offset base) {
     final p = ui.Paint()..color = const ui.Color(0x55FFF6E0);
     final cx = base.dx.floorToDouble(), cy = base.dy - 8;
@@ -308,4 +376,21 @@ class FarmGame extends FlameGame {
     );
     c.restore();
   }
+}
+
+class _Particle {
+  _Particle({
+    required this.pos,
+    required this.life,
+    this.vel = ui.Offset.zero,
+    this.frame = 0,
+    this.dust = false,
+  });
+
+  ui.Offset pos;
+  ui.Offset vel;
+  final double life;
+  final int frame;
+  final bool dust;
+  double age = 0;
 }

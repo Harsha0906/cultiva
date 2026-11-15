@@ -39,19 +39,17 @@ void main() {
     }
   });
 
-  testWidgets('tab state survives switching tabs', (tester) async {
+  testWidgets('switching tabs shows each tab and comes back', (tester) async {
     await pumpApp(tester);
     await tester.tap(find.text('Tasks').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.textContaining('taps: 0'));
-    await tester.pumpAndSettle();
-    expect(find.textContaining('taps: 1'), findsOneWidget);
+    expect(find.text('Your plots are empty'), findsOneWidget);
 
     await tester.tap(find.text('Shop').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tasks').last);
     await tester.pumpAndSettle();
-    expect(find.textContaining('taps: 1'), findsOneWidget);
+    expect(find.text('Your plots are empty'), findsOneWidget);
   });
 
   testWidgets('calendar button opens Progress calendar view', (tester) async {

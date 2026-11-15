@@ -179,6 +179,37 @@ void main() {
     });
   });
 
+  group('rollover (auto-harvest left-ripe plants)', () {
+    test('pays into yesterday, once', () async {
+      final t = await plantTodo('Bill');
+      await farm.complete(t); // ripe Monday, never tapped
+      now = DateTime(2026, 11, 17, 9);
+      expect(await farm.rollover(), kCheckCoins);
+      expect(await farm.progress.earnedOn(mon), kCheckCoins);
+      expect(await farm.rollover(), 0);
+      expect(await farm.tasks.active(), isEmpty); // finished to-do archived
+    });
+
+    test("respects yesterday's cap", () async {
+      for (var i = 0; i < 6; i++) {
+        await plantDaily('long$i', minutes: 90);
+      }
+      for (final t in await farm.tasks.active()) {
+        await farm.complete(t);
+      }
+      now = DateTime(2026, 11, 17, 9);
+      expect(await farm.rollover(), kDailyCoinCap);
+    });
+
+    test('removed tasks are skipped', () async {
+      final t = await plantDaily('Gone');
+      await farm.complete(t);
+      await farm.tasks.archive(t.id);
+      now = DateTime(2026, 11, 17, 9);
+      expect(await farm.rollover(), 0);
+    });
+  });
+
   group('settings & journal', () {
     test('defaults and round-trips', () async {
       final s = farm.settings;

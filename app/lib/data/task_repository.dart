@@ -125,6 +125,33 @@ class TaskRepository {
     );
   });
 
+  /// Edits name/crop/duration/days. Plot and kind never change.
+  /// Throws [InvalidTaskException] when the result would be invalid.
+  Future<FarmTask> update(
+    FarmTask task, {
+    String? title,
+    String? crop,
+    int? targetMinutes,
+    Weekdays? repeat,
+  }) async {
+    final next = task.copyWith(
+      title: title?.trim(),
+      crop: crop,
+      targetMinutes: targetMinutes,
+      repeat: task.isTodo ? null : repeat,
+    );
+    if (next.problems.isNotEmpty) throw InvalidTaskException(next.problems);
+    await (_db.update(_db.tasks)..where((t) => t.id.equals(task.id))).write(
+      TasksCompanion(
+        title: Value(next.title),
+        crop: Value(next.crop),
+        targetMinutes: Value(next.targetMinutes),
+        repeatMask: Value(next.repeat.mask),
+      ),
+    );
+    return next;
+  }
+
   Future<void> rename(String id, String title) =>
       (_db.update(_db.tasks)..where((t) => t.id.equals(id))).write(
         TasksCompanion(title: Value(title.trim())),

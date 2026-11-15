@@ -102,6 +102,26 @@ class FarmService {
     if (c.harvestedAt != null) {
       throw const FarmActionException('Already harvested today.');
     }
+    return _harvestOn(task, day, c);
+  });
+
+  /// Auto-harvests plants left ripe on earlier farm days, using each day's own
+  /// cap and Full Basket rules, so forgetting to tap never loses coins.
+  /// Idempotent. Returns the coins paid.
+  Future<int> rollover() async {
+    final day = await today();
+    var paid = 0;
+    for (final c in await progress.unharvestedBefore(day)) {
+      final task = await tasks.byId(c.taskId);
+      if (task == null || task.archived) continue;
+      paid += await _db.transaction(
+        () => _harvestOn(task, FarmDay.parse(c.day), c),
+      );
+    }
+    return paid;
+  }
+
+  Future<int> _harvestOn(FarmTask task, FarmDay day, Completion c) async {
     final method = CompletionMethod.values.byName(c.method);
     final base = baseCoins(task, method);
 
@@ -136,7 +156,7 @@ class FarmService {
     await progress.markHarvested(c.id, p.total);
     if (task.isTodo) await tasks.archive(task.id);
     return p.total;
-  });
+  }
 
   /// Undoes today's harvest of [task], reversing exactly what it paid.
   Future<void> unharvest(FarmTask task) => _db.transaction(() async {

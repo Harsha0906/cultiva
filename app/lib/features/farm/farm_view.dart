@@ -71,6 +71,7 @@ PlantView? nextUp(Iterable<PlantView> plants) {
 }
 
 Future<FarmView> loadFarmView(FarmService farm) async {
+  await farm.rollover();
   final day = await farm.today();
   return FarmView(
     day: day,

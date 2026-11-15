@@ -10,6 +10,7 @@ import '../../core/router.dart';
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/ui/avatar_portrait.dart';
+import '../../core/ui/coin_fly.dart';
 import '../../core/ui/pixel_button.dart';
 import '../../core/ui/pixel_icon.dart';
 import '../../data/farm_service.dart';
@@ -20,6 +21,7 @@ import '../../domain/task.dart';
 import '../../game/ambience.dart';
 import '../../game/farm_game.dart';
 import '../../game/farm_layout.dart';
+import '../tasks/plant_task_sheet.dart';
 import 'farm_view.dart';
 
 const kGrass = Color(0xFF96C55F);
@@ -37,6 +39,10 @@ class FarmScreen extends ConsumerStatefulWidget {
 
 class _FarmScreenState extends ConsumerState<FarmScreen> {
   late final FarmGame _game = FarmGame();
+  final _coinKey = GlobalKey(debugLabel: 'coin');
+  final _stackKey = GlobalKey(debugLabel: 'farmStack');
+  FarmViewport? _vp;
+  int _bumpTick = 0;
   Timer? _tick;
   Timer? _bubbleTimer;
   String? _bubble;
@@ -78,6 +84,36 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
     );
   }
 
+  /// Coins arc from the plant to the header pill; leaves burst in the scene.
+  void _celebrate(PlotKind plot, int slot) {
+    final base = FarmLayout.plantBase(plot, slot);
+    _game.burst(base);
+    final vp = _vp;
+    final stack = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+    final coin = _coinKey.currentContext?.findRenderObject() as RenderBox?;
+    if (MediaQuery.disableAnimationsOf(context) ||
+        vp == null ||
+        stack == null ||
+        coin == null) {
+      setState(() => _bumpTick++);
+      return;
+    }
+    final start = stack.localToGlobal(vp.toScreen(base - const Offset(0, 14)));
+    final end = coin.localToGlobal(coin.size.center(Offset.zero));
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => CoinFly(
+        start: start,
+        end: end,
+        onDone: () {
+          entry.remove();
+          if (mounted) setState(() => _bumpTick++);
+        },
+      ),
+    );
+    Overlay.of(context).insert(entry);
+  }
+
   void _say(String text) {
     _bubbleTimer?.cancel();
     setState(() => _bubble = text);
@@ -90,13 +126,14 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
     final p = view.at(plot, slot);
     final farm = ref.read(farmServiceProvider);
     if (p == null) {
-      _toast('Planting opens in the next update.');
+      if (mounted) await showPlantTaskSheet(context, plot: plot);
       return;
     }
     try {
       switch (p.stage) {
         case PlantStage.ripe:
           final coins = await farm.harvest(p.task);
+          _celebrate(plot, slot);
           unawaited(HapticFeedback.mediumImpact());
           _toast(
             coins > 0
@@ -157,6 +194,8 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
         child: Column(
           children: [
             FarmHeader(
+              coinKey: _coinKey,
+              bumpTick: _bumpTick,
               coins: view?.balance ?? 0,
               done: view?.doneCount ?? 0,
               total: view?.dueCount ?? 0,
@@ -170,7 +209,9 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
                     MediaQuery.devicePixelRatioOf(context),
                   );
                   _game.viewport = vp;
+                  _vp = vp;
                   return Stack(
+                    key: _stackKey,
                     children: [
                       Positioned.fill(
                         child:
@@ -350,7 +391,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
         label: 'Plant your first task',
         icon: PixelIcons.plus,
         expand: true,
-        onPressed: () => _toast('Planting opens in the next update.'),
+        onPressed: () => showPlantTaskSheet(context),
       );
     } else if (view.next case final n?) {
       final timed = n.task.kind == TaskKind.timed;
@@ -393,7 +434,15 @@ class FarmHeader extends StatelessWidget {
     this.done = 0,
     this.total = 0,
     this.avatar,
+    this.coinKey,
+    this.bumpTick = 0,
   });
+
+  /// Marks the coin icon so harvest coins can fly to it.
+  final GlobalKey? coinKey;
+
+  /// Changes whenever coins land; bumps the pill.
+  final int bumpTick;
 
   final int coins;
   final int done;
@@ -419,34 +468,38 @@ class FarmHeader extends StatelessWidget {
             child: avatar ?? const AvatarPortrait(Avatar.fallback),
           ),
           const Spacer(),
-          Semantics(
-            label: '$coins coins, $done of $total tasks done today',
-            excludeSemantics: true,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Space.md,
-                vertical: Space.sm,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.black26,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    'assets/sprites/cultiva/fx/coin.png',
-                    width: 20,
-                    height: 20,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.centerLeft,
-                    filterQuality: FilterQuality.none,
-                  ),
-                  const SizedBox(width: Space.xs),
-                  Text('$coins', style: _pill),
-                  const SizedBox(width: Space.md),
-                  Text('$done/$total today', style: _pill),
-                ],
+          Bump(
+            tick: bumpTick,
+            child: Semantics(
+              label: '$coins coins, $done of $total tasks done today',
+              excludeSemantics: true,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Space.md,
+                  vertical: Space.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      key: coinKey,
+                      'assets/sprites/cultiva/fx/coin.png',
+                      width: 20,
+                      height: 20,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.centerLeft,
+                      filterQuality: FilterQuality.none,
+                    ),
+                    const SizedBox(width: Space.xs),
+                    Text('$coins', style: _pill),
+                    const SizedBox(width: Space.md),
+                    Text('$done/$total today', style: _pill),
+                  ],
+                ),
               ),
             ),
           ),

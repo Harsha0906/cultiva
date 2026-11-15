@@ -47,12 +47,12 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 4.3 | Header (avatar, coins/progress pill, calendar), "Next up" button, barn badge | flutter-ui-design | ✅ |
 | 4.4 | Capybara NPC walking the path with tip bubbles, day/night tint | flutter-animation | ✅ |
 
-## Phase 5: Tasks
+## Phase 5: Tasks (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 5.1 | "Plant a task" sheet: name, plot, duration, repeat days, to-do or habit, crop choice | flutter-ui-patterns | ⬜ |
-| 5.2 | Tasks tab: list grouped by plot, check and timer buttons, edit and delete | flutter-ui-patterns, flutter-accessibility | ⬜ |
-| 5.3 | Complete → ripe → harvest flow with coin fly-to-HUD and haptics | flutter-animation | ⬜ |
+| 5.1 | "Plant a task" sheet: name, plot, duration, repeat days, to-do or habit, crop choice | flutter-ui-patterns | ✅ |
+| 5.2 | Tasks tab: list grouped by plot, check and timer buttons, edit and delete | flutter-ui-patterns, flutter-accessibility | ✅ |
+| 5.3 | Complete → ripe → harvest flow with coin fly-to-HUD and haptics | flutter-animation | ✅ |
 
 ## Phase 6: Focus Mode
 | Step | What | Skills | Status |
