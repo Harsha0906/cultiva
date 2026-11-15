@@ -193,22 +193,27 @@ class _Postcard extends StatelessWidget {
               if (s.doneCount > 0)
                 Align(
                   alignment: Alignment.bottomLeft,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const PixelIcon(
-                        PixelIcons.farm,
-                        color: CultivaColors.woodDark,
-                        scale: 0.75,
-                      ),
-                      Text(
-                        '${s.doneCount}',
-                        style: const TextStyle(
-                          fontFamily: kPixelFont,
-                          fontSize: 10,
+                  // Tiny badge: shrinks to fit at large text (the full count
+                  // is in the cell's label and the day sheet).
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const PixelIcon(
+                          PixelIcons.farm,
+                          color: CultivaColors.woodDark,
+                          scale: 0.75,
                         ),
-                      ),
-                    ],
+                        Text(
+                          '${s.doneCount}',
+                          style: const TextStyle(
+                            fontFamily: kPixelFont,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               if (s.mood != null)

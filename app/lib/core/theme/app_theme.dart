@@ -6,7 +6,8 @@ import 'tokens.dart';
 ThemeData buildCultivaTheme() {
   final scheme = ColorScheme.fromSeed(
     seedColor: CultivaColors.teal,
-    primary: CultivaColors.teal,
+    // tealDark keeps text buttons, field labels and links at >= 4.5:1 on paper.
+    primary: CultivaColors.tealDark,
     secondary: CultivaColors.terracotta,
     surface: CultivaColors.paper,
     onSurface: CultivaColors.ink,

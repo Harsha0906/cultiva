@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/app_prefs.dart';
-
 import '../../core/router.dart';
+import '../../core/sfx.dart';
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/ui/avatar_portrait.dart';
@@ -96,6 +96,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
         vp == null ||
         stack == null ||
         coin == null) {
+      Sfx.play(SfxName.coin);
       setState(() => _bumpTick++);
       return;
     }
@@ -108,6 +109,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
         end: end,
         onDone: () {
           entry.remove();
+          Sfx.play(SfxName.coin);
           if (mounted) setState(() => _bumpTick++);
         },
       ),
@@ -136,6 +138,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
           final coins = await farm.harvest(p.task);
           _celebrate(plot, slot);
           unawaited(AppFeedback.medium());
+          Sfx.play(SfxName.harvest);
           _toast(
             coins > 0
                 ? '+$coins coins from ${p.task.title}'
@@ -154,6 +157,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
           } else {
             await farm.complete(p.task);
             unawaited(AppFeedback.light());
+            Sfx.play(SfxName.ripen);
             _toast('${p.task.title} is ripe. Tap it to harvest!');
           }
       }
@@ -229,6 +233,8 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
                       if (view != null) ..._a11yCells(vp, view),
                       Positioned.fill(
                         child: GestureDetector(
+                          // Screen readers use the labelled cell overlay instead.
+                          excludeFromSemantics: true,
                           behavior: HitTestBehavior.translucent,
                           onTapUp: (d) => _onTap(d.localPosition, vp, view),
                         ),
@@ -320,7 +326,9 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
     for (final plot in PlotKind.values)
       for (var s = 0; s < kPlotCapacity; s++)
         Positioned.fromRect(
-          rect: vp.rectToScreen(FarmLayout.cell(plot, s)),
+          // Screen-reader targets only (touch goes through the scene), so they
+          // may overlap neighbours to reach the 48dp minimum on small phones.
+          rect: _atLeastTap(vp.rectToScreen(FarmLayout.cell(plot, s))),
           child: Semantics(
             button: true,
             label: _cellLabel(view.at(plot, s)),
@@ -329,6 +337,12 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
           ),
         ),
   ];
+
+  static Rect _atLeastTap(Rect r) => Rect.fromCenter(
+    center: r.center,
+    width: r.width < kMinTap ? kMinTap : r.width,
+    height: r.height < kMinTap ? kMinTap : r.height,
+  );
 
   String _cellLabel(PlantView? p) {
     if (p == null) return 'Empty soil. Plant a task.';
@@ -468,68 +482,76 @@ class FarmHeader extends StatelessWidget {
             onPressed: () => context.push(Routes.profile),
             child: avatar ?? const AvatarPortrait(Avatar.fallback),
           ),
-          const Spacer(),
-          Bump(
-            tick: bumpTick,
-            child: Semantics(
-              label: '$coins coins, $done of $total tasks done today',
-              excludeSemantics: true,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Space.md,
-                  vertical: Space.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      key: coinKey,
-                      'assets/sprites/cultiva/fx/coin.png',
-                      width: 20,
-                      height: 20,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.centerLeft,
-                      filterQuality: FilterQuality.none,
+          Expanded(
+            child: Center(
+              child: Bump(
+                tick: bumpTick,
+                child: Semantics(
+                  label: '$coins coins, $done of $total tasks done today',
+                  excludeSemantics: true,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Space.md,
+                      vertical: Space.sm,
                     ),
-                    const SizedBox(width: Space.xs),
-                    Text('$coins', style: _pill),
-                    const SizedBox(width: Space.md),
-                    Text('$done/$total today', style: _pill),
-                  ],
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    // Wraps onto two lines at large text sizes.
+                    child: Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Image.asset(
+                          key: coinKey,
+                          'assets/sprites/cultiva/fx/coin.png',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.centerLeft,
+                          filterQuality: FilterQuality.none,
+                        ),
+                        const SizedBox(width: Space.xs),
+                        Text('$coins', style: _pill),
+                        const SizedBox(width: Space.md),
+                        Text('$done/$total today', style: _pill),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-          const Spacer(),
           PixelIconButton(
             semanticLabel: 'Calendar',
             onPressed: () => context.go(Routes.calendar),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _months[DateTime.now().month - 1],
-                  style: const TextStyle(
-                    fontFamily: kPixelFont,
-                    fontSize: 9,
-                    color: CultivaColors.terracotta,
-                    height: 1,
+            // A date badge drawn like an icon: it scales to fit its tile.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _months[DateTime.now().month - 1],
+                    style: const TextStyle(
+                      fontFamily: kPixelFont,
+                      fontSize: 9,
+                      color: CultivaColors.terracotta,
+                      height: 1,
+                    ),
                   ),
-                ),
-                Text(
-                  '$day',
-                  style: const TextStyle(
-                    fontFamily: kPixelFont,
-                    fontSize: 18,
-                    color: CultivaColors.ink,
-                    height: 1,
+                  Text(
+                    '$day',
+                    style: const TextStyle(
+                      fontFamily: kPixelFont,
+                      fontSize: 18,
+                      color: CultivaColors.ink,
+                      height: 1,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

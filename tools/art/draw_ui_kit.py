@@ -233,8 +233,9 @@ def main():
     panel(PAPER, PAPER[0], PAPER[1]).save(os.path.join(OUT, "panel_paper.png"))
     panel(WOOD, WOOD[0], WOOD[4], plank=True).save(os.path.join(OUT, "panel_wood.png"))
     faces = {
-        "primary": [H("#4a1d14"), H("#8a3a20"), H("#b5502e"), H("#d0673f"), H("#e58a62"), H("#f3b48f")],
-        "teal": [TEAL[0], H("#1b4c50"), TEAL[2], TEAL[3], TEAL[4], TEAL[5]],
+        # Faces darkened in step 10.3 so white labels reach WCAG 4.5:1.
+        "primary": [H("#4a1d14"), H("#7a3019"), H("#9c4426"), H("#b5502e"), H("#d0673f"), H("#e58a62")],
+        "teal": [TEAL[0], H("#173f43"), H("#1f5759"), TEAL[2], TEAL[3], TEAL[4]],
         "wood": [WOOD[0], H("#5a3527"), WOOD[2], WOOD[3], WOOD[4], WOOD[5]],
         "paper": [PAPER[0], H("#a8946c"), PAPER[2], PAPER[4], PAPER[5], H("#fffaf0")],
     }

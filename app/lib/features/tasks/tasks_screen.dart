@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/app_prefs.dart';
-
 import '../../core/router.dart';
+import '../../core/sfx.dart';
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/ui/crop_sprite.dart';
@@ -91,15 +91,16 @@ class _SectionHeader extends StatelessWidget {
     final name = plot == PlotKind.daily ? 'Daily' : 'To-do & Habits';
     return Padding(
       padding: const EdgeInsets.only(bottom: Space.sm),
-      child: Row(
+      // Wraps the button under the title at large text sizes.
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Expanded(
-            child: Semantics(
-              header: true,
-              child: Text(
-                '$name  $count/$kPlotCapacity',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+          Semantics(
+            header: true,
+            child: Text(
+              '$name  $count/$kPlotCapacity',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
           if (count < kPlotCapacity)
@@ -160,6 +161,7 @@ class _TaskRow extends ConsumerWidget {
         case PlantStage.ripe:
           final coins = await farm.harvest(task);
           unawaited(AppFeedback.medium());
+          Sfx.play(SfxName.harvest);
           if (context.mounted) {
             _toast(context, '+$coins coins from ${task.title}');
           }
@@ -172,6 +174,7 @@ class _TaskRow extends ConsumerWidget {
           } else {
             await farm.complete(task);
             unawaited(AppFeedback.light());
+            Sfx.play(SfxName.ripen);
           }
         case PlantStage.harvested || PlantStage.resting:
           break;
@@ -278,13 +281,18 @@ class _TaskRow extends ConsumerWidget {
                     ),
                   )
                 else
-                  PixelButton(
-                    label: action.$1!,
-                    icon: action.$3,
-                    variant: action.$2,
-                    onPressed: plant.stage == PlantStage.resting
-                        ? null
-                        : () => _act(context, ref),
+                  // Capped so the task name keeps room at large text sizes
+                  // (the label wraps inside the button instead).
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 132),
+                    child: PixelButton(
+                      label: action.$1!,
+                      icon: action.$3,
+                      variant: action.$2,
+                      onPressed: plant.stage == PlantStage.resting
+                          ? null
+                          : () => _act(context, ref),
+                    ),
                   ),
               ],
             ),

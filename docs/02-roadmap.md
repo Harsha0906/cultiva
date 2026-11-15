@@ -78,12 +78,12 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 9.1 | Profile: name, avatar picker (no capybara), stats | flutter-ui-patterns | ✅ |
 | 9.2 | Settings: reset time, reminder time, sound, haptics, reduced motion; daily reminder notification | flutter-notifications | ✅ |
 
-## Phase 10: Onboarding & polish
+## Phase 10: Onboarding & polish (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 10.1 | Onboarding: "Grandma's farm" intro, pick name and avatar, first habit, 1-minute guided harvest, notification permission | flutter-ui-design, ux-writing | ⬜ |
-| 10.2 | Sound effects, haptics, empty states, About screen with CraftPix credits | flutter-ui-design | ⬜ |
-| 10.3 | Accessibility pass (text scaling, screen reader, 44pt targets, reduced motion) | flutter-accessibility, accessibility-audit | ⬜ |
+| 10.1 | Onboarding: "Grandma's farm" intro, pick name and avatar, first habit, 1-minute guided harvest, notification permission | flutter-ui-design, ux-writing | ✅ |
+| 10.2 | Sound effects, haptics, empty states, About screen with CraftPix credits | flutter-ui-design | ✅ |
+| 10.3 | Accessibility pass (text scaling, screen reader, 44pt targets, reduced motion) | flutter-accessibility, accessibility-audit | ✅ |
 
 ## Phase 11: QA & release
 | Step | What | Skills | Status |

@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/app_prefs.dart';
-
 import '../../core/notifications.dart';
 import '../../core/router.dart';
+import '../../core/sfx.dart';
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/ui/crop_sprite.dart';
@@ -133,6 +133,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen>
       if (!mounted) return;
       if (next.status == FocusStatus.ripe) {
         unawaited(AppFeedback.medium());
+        Sfx.play(SfxName.done);
         unawaited(_notify.focusStopped(task));
       }
       _apply(task, next);
@@ -254,6 +255,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen>
     final task = _task!;
     final coins = await _farm.harvest(task);
     unawaited(AppFeedback.medium());
+    Sfx.play(SfxName.harvest);
     unawaited(_notify.focusStopped(task));
     _toast('+$coins coins from ${task.title}');
     if (mounted) context.go(Routes.farm);

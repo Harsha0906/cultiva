@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/app_prefs.dart';
+import '../../core/sfx.dart';
 
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
@@ -41,12 +42,19 @@ class ShopScreen extends ConsumerWidget {
           ? const SizedBox.shrink()
           : GridView.builder(
               padding: const EdgeInsets.all(Space.lg),
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 200,
-                mainAxisSpacing: Space.md,
-                crossAxisSpacing: Space.md,
-                childAspectRatio: 0.72,
-              ),
+              // Large text: one wide card per row so names and buttons fit.
+              gridDelegate: MediaQuery.textScalerOf(context).scale(10) >= 15
+                  ? const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1,
+                      mainAxisSpacing: Space.md,
+                      childAspectRatio: 1.15,
+                    )
+                  : const SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: 200,
+                      mainAxisSpacing: Space.md,
+                      crossAxisSpacing: Space.md,
+                      childAspectRatio: 0.72,
+                    ),
               itemCount: kShopCatalogue.length,
               itemBuilder: (context, i) =>
                   _ItemCard(item: kShopCatalogue[i], view: view),
@@ -167,6 +175,7 @@ class _ItemCard extends ConsumerWidget {
       builder: (_) => _BuySheet(item: item),
     );
     if (bought != true || !context.mounted) return;
+    Sfx.play(SfxName.buy);
     await AppFeedback.light();
     if (!context.mounted) return;
     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
