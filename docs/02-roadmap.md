@@ -85,9 +85,9 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 10.2 | Sound effects, haptics, empty states, About screen with CraftPix credits | flutter-ui-design | ✅ |
 | 10.3 | Accessibility pass (text scaling, screen reader, 44pt targets, reduced motion) | flutter-accessibility, accessibility-audit | ✅ |
 
-## Phase 11: QA & release
+## Phase 11: QA & release (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 11.1 | Test sweep: unit, widget and integration tests on the main flows | flutter-testing, flutter-device-testing | ⬜ |
-| 11.2 | Code review and performance pass (frame times, app size) | flutter-code-review, flutter-performance | ⬜ |
-| 11.3 | Release build: app icon, splash, versioning, signed AAB/APK | flutter-build-release | ⬜ |
+| 11.1 | Test sweep: unit, widget and integration tests on the main flows | flutter-testing, flutter-device-testing | ✅ |
+| 11.2 | Code review and performance pass (frame times, app size) | flutter-code-review, flutter-performance | ✅ |
+| 11.3 | Release build: app icon, splash, versioning, signed AAB/APK | flutter-build-release | ✅ |

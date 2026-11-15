@@ -425,7 +425,9 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
       button = const SizedBox(height: kMinTap);
     } else if (view.plants.isEmpty) {
       button = PixelButton(
-        label: 'Plant your first task',
+        label: view.finishedOffFarm > 0
+            ? 'Plant another task'
+            : 'Plant your first task',
         icon: PixelIcons.plus,
         expand: true,
         onPressed: () => showPlantTaskSheet(context),

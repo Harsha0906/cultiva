@@ -40,6 +40,7 @@ int notificationIdFor(FarmTask task) {
   final id = h & 0x7fffffff;
   return id == kDailyReminderId ? id + 1 : id;
 }
+
 String focusRouteFor(FarmTask task) => '/focus/${task.id}';
 
 /// Fixed id for the daily reminder.
@@ -144,7 +145,7 @@ class LocalNotifier implements AppNotifier {
     tzdata.initializeTimeZones();
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@drawable/ic_stat_sprout'),
       ),
       onDidReceiveNotificationResponse: (r) {
         final route = r.payload;

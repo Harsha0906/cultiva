@@ -1,3 +1,4 @@
+import 'package:cultiva/data/db.dart';
 import 'package:cultiva/data/farm_service.dart';
 import 'package:cultiva/domain/avatar.dart';
 import 'package:cultiva/domain/farm_day.dart';
@@ -5,6 +6,8 @@ import 'package:cultiva/domain/plant_engine.dart';
 import 'package:cultiva/domain/task.dart';
 import 'package:cultiva/features/farm/farm_view.dart';
 import 'package:cultiva/game/ambience.dart';
+import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final day = FarmDay(2026, 11, 16);
@@ -99,5 +102,24 @@ void main() {
         contains('Full basket'),
       );
     });
+  });
+
+  test('a harvested one-off to-do still counts as done today', () async {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    final db = CultivaDb(NativeDatabase.memory());
+    addTearDown(db.close);
+    final farm = FarmService(db, clock: () => DateTime(2026, 11, 16, 9));
+    final t = await farm.tasks.plant(
+      title: 'Pay bill',
+      plot: PlotKind.todo,
+      crop: 'pumpkin',
+      today: day,
+    );
+    await farm.complete(t);
+    await farm.harvest(t); // one-off to-dos leave the farm when harvested
+    final v = await loadFarmView(farm);
+    expect(v.plants, isEmpty);
+    expect(v.finishedOffFarm, 1);
+    expect((v.doneCount, v.dueCount), (1, 1));
   });
 }

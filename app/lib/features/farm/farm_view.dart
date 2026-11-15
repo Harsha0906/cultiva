@@ -19,6 +19,7 @@ final class FarmView {
     required this.avatar,
     this.decorations = const {},
     this.hasUnplaced = false,
+    this.finishedOffFarm = 0,
   });
 
   final FarmDay day;
@@ -32,14 +33,21 @@ final class FarmView {
   /// The player owns a decoration that isn't on the farm yet.
   final bool hasUnplaced;
 
+  /// One-off to-dos finished today that already left the farm (harvested
+  /// to-dos are archived). They still count toward "done today".
+  final int finishedOffFarm;
+
   Iterable<PlantView> get due =>
       plants.where((p) => p.stage != PlantStage.resting);
-  int get dueCount => due.length;
-  int get doneCount => due
-      .where(
-        (p) => p.stage == PlantStage.ripe || p.stage == PlantStage.harvested,
-      )
-      .length;
+  int get dueCount => due.length + finishedOffFarm;
+  int get doneCount =>
+      due
+          .where(
+            (p) =>
+                p.stage == PlantStage.ripe || p.stage == PlantStage.harvested,
+          )
+          .length +
+      finishedOffFarm;
   int get harvestedToday =>
       plants.where((p) => p.stage == PlantStage.harvested).length;
   int get ripeCount => plants.where((p) => p.stage == PlantStage.ripe).length;
@@ -84,9 +92,15 @@ Future<FarmView> loadFarmView(FarmService farm, [ShopService? shop]) async {
   await farm.rollover();
   final day = await farm.today();
   final owned = await shop?.owned() ?? const <OwnedItem>[];
+  final plants = await farm.plants(day);
+  final onFarm = {for (final p in plants) p.task.id};
+  final finishedOffFarm = (await farm.progress.forDay(day))
+      .where((c) => !onFarm.contains(c.taskId))
+      .length;
   return FarmView(
     day: day,
-    plants: await farm.plants(day),
+    plants: plants,
+    finishedOffFarm: finishedOffFarm,
     balance: await farm.progress.balance(),
     avatar: await farm.settings.avatar(),
     decorations: {
