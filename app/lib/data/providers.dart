@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'db.dart';
 import 'farm_service.dart';
+import 'focus_service.dart';
 import 'journal_repository.dart';
 
 /// The single app database. Override in tests with an in-memory instance.
@@ -19,6 +20,14 @@ final clockProvider = Provider<DateTime Function()>((_) => DateTime.now);
 
 final farmServiceProvider = Provider<FarmService>(
   (ref) => FarmService(ref.watch(dbProvider), clock: ref.watch(clockProvider)),
+);
+
+final focusServiceProvider = Provider<FocusService>(
+  (ref) => FocusService(
+    ref.watch(dbProvider),
+    ref.watch(farmServiceProvider),
+    clock: ref.watch(clockProvider),
+  ),
 );
 
 final journalRepositoryProvider = Provider<JournalRepository>(

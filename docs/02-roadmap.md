@@ -54,11 +54,11 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 5.2 | Tasks tab: list grouped by plot, check and timer buttons, edit and delete | flutter-ui-patterns, flutter-accessibility | ✅ |
 | 5.3 | Complete → ripe → harvest flow with coin fly-to-HUD and haptics | flutter-animation | ✅ |
 
-## Phase 6: Focus Mode
+## Phase 6: Focus Mode (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 6.1 | Timer screen: timestamp-based countdown, growth in real time, pause, give up, "I already did it" | dart-concurrency, flutter-animation | ⬜ |
-| 6.2 | Keeps running in the background: foreground service plus an ongoing notification and a "done" notification, clock-change guard | flutter-background-execution, flutter-notifications | ⬜ |
+| 6.1 | Timer screen: timestamp-based countdown, growth in real time, pause, give up, "I already did it" | dart-concurrency, flutter-animation | ✅ |
+| 6.2 | Keeps running in the background: timestamp timer + ongoing countdown notification (no foreground service needed; see step doc) and a "done" notification, clock-change guard | flutter-background-execution, flutter-notifications | ✅ |
 
 ## Phase 7: Shop & Barn
 | Step | What | Skills | Status |

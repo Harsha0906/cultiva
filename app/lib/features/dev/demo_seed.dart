@@ -12,7 +12,7 @@ Future<void> seedDemoFarm(FarmService farm) async {
     ('Walk', 20, 'pumpkin'),
     ('Meditate', 10, 'lettuce'),
     ('Guitar practice', 45, 'grape'),
-    ('Stretch', 15, 'wheat'),
+    ('Breathe', 1, 'wheat'), // 1-minute task for testing Focus Mode
   ];
   final todos = [
     ('Pay electricity bill', Weekdays.none, 'squash'),

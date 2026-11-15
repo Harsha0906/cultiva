@@ -3,6 +3,7 @@ import '../domain/plant_engine.dart';
 import '../domain/rewards.dart';
 import '../domain/task.dart';
 import 'db.dart';
+import 'focus_math.dart';
 import 'progress_repository.dart';
 import 'settings_repository.dart';
 import 'task_repository.dart';
@@ -45,6 +46,13 @@ class FarmService {
     final d = day ?? await today();
     final active = await tasks.active();
     final todays = {for (final c in await progress.forDay(d)) c.taskId: c};
+    final now = _clock();
+    final focusSec = {
+      for (final s in await (_db.select(
+        _db.focusSessions,
+      )..where((f) => f.day.equals(d.key))).get())
+        s.taskId: focusElapsed(s, now).$1,
+    };
     final views = <PlantView>[];
     for (final t in active) {
       final c = todays[t.id];
@@ -54,7 +62,7 @@ class FarmService {
         t,
         d,
         today: DayRecord(
-          focusMinutes: c?.minutes ?? 0,
+          focusMinutes: c?.minutes ?? ((focusSec[t.id] ?? 0) ~/ 60),
           ripened: c != null,
           harvested: c?.harvestedAt != null,
         ),
