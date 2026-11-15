@@ -19,6 +19,7 @@ docs/design/art-test/house-comparison.png
 # CraftPix raw packs must never be committed as raw files (license: no redistribution of source files)
 assets/craftpix-raw/
 app/assets/sprites/pack/
+docs/design/art/cultiva-sprites-preview.png
 
 # OS
 Thumbs.db
