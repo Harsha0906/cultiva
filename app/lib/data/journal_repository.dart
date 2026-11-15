@@ -18,6 +18,11 @@ class JournalRepository {
     _db.journal,
   )..where((j) => j.day.equals(day.key))).getSingleOrNull();
 
+  Future<void> clearMood(FarmDay day) =>
+      (_db.update(_db.journal)..where((j) => j.day.equals(day.key))).write(
+        JournalCompanion(mood: const Value(null), updatedAt: Value(_clock())),
+      );
+
   /// Saves mood (1–5) and/or note for a day; omitted fields keep their value.
   Future<void> upsert(FarmDay day, {int? mood, String? note}) async {
     if (mood != null && (mood < 1 || mood > 5)) {

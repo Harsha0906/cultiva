@@ -95,7 +95,9 @@ class FarmService {
       taskId: task.id,
       day: day,
       method: m,
-      minutes: m == CompletionMethod.focus
+      // Timed tasks log their planned minutes (also for "I already did it":
+      // the journal should show the time really spent; coins still pay half).
+      minutes: m != CompletionMethod.check
           ? (minutes > 0 ? minutes : task.targetMinutes ?? 0)
           : minutes,
     );

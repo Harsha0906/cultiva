@@ -56,7 +56,7 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.bySemanticsLabel('Calendar'));
     await tester.pumpAndSettle();
-    expect(find.text('Calendar view (Phase 8)'), findsOneWidget);
+    expect(find.text('Farm postcards'), findsOneWidget);
   });
 
   testWidgets('avatar opens Profile and back returns to Farm', (tester) async {

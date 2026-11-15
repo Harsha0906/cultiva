@@ -66,11 +66,11 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 7.1 | Shop: decoration catalogue, buy with coins (ledger) | flutter-ui-patterns | ✅ |
 | 7.2 | Barn storage: today's harvest, owned decorations, place items in decoration spots | flutter-ui-patterns | ✅ |
 
-## Phase 8: Progress
+## Phase 8: Progress (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 8.1 | Today card: auto-log, mood, note | flutter-ui-patterns | ⬜ |
-| 8.2 | Weekly chart and calendar of daily "farm postcards", open any past day | flutter-ui-design | ⬜ |
+| 8.1 | Today card: auto-log, mood, note | flutter-ui-patterns | ✅ |
+| 8.2 | Weekly chart and calendar of daily "farm postcards", open any past day | flutter-ui-design | ✅ |
 
 ## Phase 9: Profile, settings, notifications
 | Step | What | Skills | Status |

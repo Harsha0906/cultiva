@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/live_query.dart';
 import '../../core/router.dart';
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
@@ -16,9 +17,7 @@ import '../shop/shop_view.dart';
 import 'spot_picker.dart';
 
 /// Today's harvested tasks (including finished to-dos that left the plot).
-final todaysHarvestProvider = StreamProvider<List<(FarmTask, int)>>((
-  ref,
-) async* {
+final todaysHarvestProvider = StreamProvider<List<(FarmTask, int)>>((ref) {
   final farm = ref.watch(farmServiceProvider);
   final db = ref.watch(dbProvider);
   Future<List<(FarmTask, int)>> load() async {
@@ -32,12 +31,10 @@ final todaysHarvestProvider = StreamProvider<List<(FarmTask, int)>>((
     return out;
   }
 
-  yield await load();
-  await for (final _ in db.tableUpdates(
-    TableUpdateQuery.onAllTables([db.completions, db.tasks]),
-  )) {
-    yield await load();
-  }
+  return liveQuery(
+    db.tableUpdates(TableUpdateQuery.onAllTables([db.completions, db.tasks])),
+    load,
+  );
 });
 
 /// The barn: today's harvest + owned decorations (place them on the farm).

@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show TableUpdateQuery;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/live_query.dart';
 import '../../data/providers.dart';
 import '../../data/shop_service.dart';
 
@@ -18,18 +19,17 @@ final class ShopView {
   }
 }
 
-final shopViewProvider = StreamProvider<ShopView>((ref) async* {
+final shopViewProvider = StreamProvider<ShopView>((ref) {
   final db = ref.watch(dbProvider);
   final shop = ref.watch(shopServiceProvider);
   final farm = ref.watch(farmServiceProvider);
-  Future<ShopView> load() async => ShopView(
-    balance: await farm.progress.balance(),
-    owned: await shop.owned(),
+  return liveQuery(
+    db.tableUpdates(
+      TableUpdateQuery.onAllTables([db.inventory, db.coinLedger]),
+    ),
+    () async => ShopView(
+      balance: await farm.progress.balance(),
+      owned: await shop.owned(),
+    ),
   );
-  yield await load();
-  await for (final _ in db.tableUpdates(
-    TableUpdateQuery.onAllTables([db.inventory, db.coinLedger]),
-  )) {
-    yield await load();
-  }
 });

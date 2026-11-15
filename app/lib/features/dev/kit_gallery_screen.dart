@@ -115,14 +115,6 @@ class _KitGalleryScreenState extends ConsumerState<KitGalleryScreen> {
             expand: true,
             onPressed: () {},
           ),
-          const SizedBox(height: Space.sm),
-          PixelButton(
-            label: '+300 coins (debug)',
-            variant: PixelButtonVariant.wood,
-            expand: true,
-            onPressed: () =>
-                grantDebugCoins(ref.read(farmServiceProvider), 300),
-          ),
           const SizedBox(height: Space.lg),
           PixelPanel(
             style: PanelStyle.wood,

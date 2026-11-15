@@ -5,6 +5,7 @@ import 'farm_service.dart';
 import 'focus_service.dart';
 import 'journal_repository.dart';
 import 'shop_service.dart';
+import 'stats_service.dart';
 
 /// The single app database. Override in tests with an in-memory instance.
 final dbProvider = Provider<CultivaDb>((ref) {
@@ -33,6 +34,15 @@ final focusServiceProvider = Provider<FocusService>(
 
 final shopServiceProvider = Provider<ShopService>(
   (ref) => ShopService(ref.watch(dbProvider), ref.watch(farmServiceProvider)),
+);
+
+final statsServiceProvider = Provider<StatsService>(
+  (ref) => StatsService(
+    ref.watch(dbProvider),
+    ref.watch(farmServiceProvider),
+    ref.watch(journalRepositoryProvider),
+    clock: ref.watch(clockProvider),
+  ),
 );
 
 final journalRepositoryProvider = Provider<JournalRepository>(

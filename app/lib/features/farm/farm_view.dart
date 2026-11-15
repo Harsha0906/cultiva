@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show TableUpdateQuery;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/live_query.dart';
 import '../../data/farm_service.dart';
 import '../../data/providers.dart';
 import '../../data/shop_service.dart';
@@ -97,21 +98,21 @@ Future<FarmView> loadFarmView(FarmService farm, [ShopService? shop]) async {
 }
 
 /// Live farm state; re-computed whenever farm tables change.
-final farmViewProvider = StreamProvider<FarmView>((ref) async* {
+final farmViewProvider = StreamProvider<FarmView>((ref) {
   final farm = ref.watch(farmServiceProvider);
   final shop = ref.watch(shopServiceProvider);
   final db = ref.watch(dbProvider);
-  yield await loadFarmView(farm, shop);
-  final changes = db.tableUpdates(
-    TableUpdateQuery.onAllTables([
-      db.tasks,
-      db.completions,
-      db.coinLedger,
-      db.settings,
-      db.inventory,
-    ]),
+  return liveQuery(
+    db.tableUpdates(
+      TableUpdateQuery.onAllTables([
+        db.tasks,
+        db.completions,
+        db.coinLedger,
+        db.settings,
+        db.inventory,
+        db.focusSessions,
+      ]),
+    ),
+    () => loadFarmView(farm, shop),
   );
-  await for (final _ in changes) {
-    yield await loadFarmView(farm, shop);
-  }
 });
