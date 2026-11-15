@@ -1,8 +1,8 @@
 import 'package:cultiva/app.dart';
 import 'package:cultiva/core/router.dart';
+import 'package:cultiva/features/shell/app_shell.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart';
 
 Future<void> pumpApp(
   WidgetTester tester, {
@@ -50,7 +50,7 @@ void main() {
     await tester.tap(find.bySemanticsLabel('Profile'));
     await tester.pumpAndSettle();
     expect(find.textContaining('animal avatars'), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(PixelNavBar), findsNothing);
 
     await tester.pageBack();
     await tester.pumpAndSettle();

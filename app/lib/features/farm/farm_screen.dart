@@ -2,7 +2,10 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/router.dart';
+import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/ui/pixel_button.dart';
+import '../../core/ui/pixel_icon.dart';
 
 /// Farm (home). Placeholder until Phase 4 adds the Flame scene.
 class FarmScreen extends StatelessWidget {
@@ -11,7 +14,7 @@ class FarmScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: CultivaColors.grass,
+      backgroundColor: const Color(0xFF96C55F),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -35,10 +38,24 @@ class FarmScreen extends StatelessWidget {
 
 /// Header: avatar (→ Profile) · coins/progress pill · calendar (→ Progress calendar).
 class FarmHeader extends StatelessWidget {
-  const FarmHeader({super.key});
+  const FarmHeader({
+    super.key,
+    this.coins = 0,
+    this.done = 0,
+    this.total = 0,
+    this.avatar,
+  });
+
+  final int coins;
+  final int done;
+  final int total;
+
+  /// Player avatar portrait; falls back to a neutral icon until one is chosen.
+  final Widget? avatar;
 
   @override
   Widget build(BuildContext context) {
+    final day = DateTime.now().day;
     return Container(
       color: CultivaColors.tealDark,
       padding: const EdgeInsets.symmetric(
@@ -47,75 +64,87 @@ class FarmHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _HeaderButton(
+          PixelIconButton(
             semanticLabel: 'Profile',
-            onTap: () => context.push(Routes.profile),
-            child: const Icon(Icons.pets, color: CultivaColors.woodDark),
+            onPressed: () => context.push(Routes.profile),
+            child:
+                avatar ??
+                const PixelIcon(PixelIcons.gear, color: CultivaColors.woodDark),
           ),
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: Space.md,
-              vertical: Space.sm,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.black26,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              '● 0   |   0/0 today',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+          Semantics(
+            label: '$coins coins, $done of $total tasks done today',
+            excludeSemantics: true,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Space.md,
+                vertical: Space.sm,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/sprites/cultiva/fx/coin.png',
+                    width: 20,
+                    height: 20,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.centerLeft,
+                    filterQuality: FilterQuality.none,
+                  ),
+                  const SizedBox(width: Space.xs),
+                  Text('$coins', style: _pill),
+                  const SizedBox(width: Space.md),
+                  Text('$done/$total today', style: _pill),
+                ],
               ),
             ),
           ),
           const Spacer(),
-          _HeaderButton(
+          PixelIconButton(
             semanticLabel: 'Calendar',
-            onTap: () => context.go(Routes.calendar),
-            child: const Icon(
-              Icons.calendar_month,
-              color: CultivaColors.terracotta,
+            onPressed: () => context.go(Routes.calendar),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _months[DateTime.now().month - 1],
+                  style: const TextStyle(
+                    fontFamily: kPixelFont,
+                    fontSize: 9,
+                    color: CultivaColors.terracotta,
+                    height: 1,
+                  ),
+                ),
+                Text(
+                  '$day',
+                  style: const TextStyle(
+                    fontFamily: kPixelFont,
+                    fontSize: 18,
+                    color: CultivaColors.ink,
+                    height: 1,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
-}
 
-class _HeaderButton extends StatelessWidget {
-  const _HeaderButton({
-    required this.semanticLabel,
-    required this.onTap,
-    required this.child,
-  });
+  static const _pill = TextStyle(
+    fontFamily: kPixelFont,
+    fontSize: 15,
+    color: Colors.white,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
 
-  final String semanticLabel;
-  final VoidCallback onTap;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      child: Material(
-        color: CultivaColors.paper,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: CultivaColors.woodDark, width: 2),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: onTap,
-          child: SizedBox.square(
-            dimension: kMinTap,
-            child: Center(child: child),
-          ),
-        ),
-      ),
-    );
-  }
+  static const _months = [
+    'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', //
+    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+  ];
 }

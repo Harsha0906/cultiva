@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import 'text.dart';
 import 'tokens.dart';
 
 ThemeData buildCultivaTheme() {
@@ -10,34 +11,18 @@ ThemeData buildCultivaTheme() {
     surface: CultivaColors.paper,
     onSurface: CultivaColors.ink,
   );
+  final text = buildTextTheme();
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
+    fontFamily: kBodyFont,
+    textTheme: text,
     scaffoldBackgroundColor: CultivaColors.paper,
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: CultivaColors.tealDark,
       foregroundColor: Colors.white,
       centerTitle: false,
-    ),
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: CultivaColors.woodDark,
-      indicatorColor: CultivaColors.terracotta,
-      labelTextStyle: WidgetStateProperty.resolveWith(
-        (states) => TextStyle(
-          color: states.contains(WidgetState.selected)
-              ? Colors.white
-              : const Color(0xFFE9D7B5),
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-      ),
-      iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(
-          color: states.contains(WidgetState.selected)
-              ? Colors.white
-              : const Color(0xFFE9D7B5),
-        ),
-      ),
+      titleTextStyle: text.titleLarge!.copyWith(color: Colors.white),
     ),
   );
 }

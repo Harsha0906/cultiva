@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../features/dev/kit_gallery_screen.dart';
 import '../features/farm/farm_screen.dart';
 import '../features/focus/focus_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -19,6 +21,7 @@ abstract final class Routes {
   static const profile = '/profile';
   static const calendar = '/progress?view=calendar';
   static String focus(String taskId) => '/focus/${Uri.encodeComponent(taskId)}';
+  static const devKit = '/dev/kit';
 }
 
 final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -60,6 +63,12 @@ GoRouter buildRouter({String initialLocation = Routes.farm}) => GoRouter(
         ),
       ],
     ),
+    if (kDebugMode)
+      GoRoute(
+        path: Routes.devKit,
+        parentNavigatorKey: _rootKey,
+        builder: (_, _) => const KitGalleryScreen(),
+      ),
     GoRoute(
       path: Routes.profile,
       parentNavigatorKey: _rootKey,
