@@ -1,6 +1,10 @@
 import 'package:cultiva/app.dart';
 import 'package:cultiva/core/router.dart';
+import 'package:cultiva/data/db.dart';
+import 'package:cultiva/data/providers.dart';
 import 'package:cultiva/features/shell/app_shell.dart';
+import 'package:drift/drift.dart' show driftRuntimeOptions;
+import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,15 +13,27 @@ Future<void> pumpApp(
   String location = Routes.farm,
 }) async {
   await tester.pumpWidget(
-    ProviderScope(child: CultivaApp(initialLocation: location)),
+    ProviderScope(
+      overrides: [
+        dbProvider.overrideWith((ref) {
+          final db = CultivaDb(NativeDatabase.memory());
+          ref.onDispose(db.close);
+          return db;
+        }),
+        farmSceneEnabledProvider.overrideWith((_) => false),
+      ],
+      child: CultivaApp(initialLocation: location),
+    ),
   );
   await tester.pumpAndSettle();
 }
 
 void main() {
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
   testWidgets('starts on Farm with 4 labelled tabs', (tester) async {
     await pumpApp(tester);
-    expect(find.text('Farm scene arrives in Phase 4'), findsOneWidget);
+    expect(find.text('Plant your first task'), findsOneWidget);
     for (final label in ['Farm', 'Tasks', 'Shop', 'Progress']) {
       expect(find.text(label), findsWidgets);
     }
@@ -54,7 +70,7 @@ void main() {
 
     await tester.pageBack();
     await tester.pumpAndSettle();
-    expect(find.text('Farm scene arrives in Phase 4'), findsOneWidget);
+    expect(find.text('Plant your first task'), findsOneWidget);
   });
 
   testWidgets('invalid focus id shows not-found with a way home', (
@@ -64,7 +80,7 @@ void main() {
     expect(find.text('Task not found.'), findsOneWidget);
     await tester.tap(find.text('Back to farm'));
     await tester.pumpAndSettle();
-    expect(find.text('Farm scene arrives in Phase 4'), findsOneWidget);
+    expect(find.text('Plant your first task'), findsOneWidget);
   });
 
   testWidgets('unknown route shows not-found', (tester) async {

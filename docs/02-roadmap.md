@@ -39,13 +39,13 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 3.2 | Day engine: 4 AM reset, repeat days, daily replant, dormant/revive, plot capacity of 6 (unit-tested) | dart-language, flutter-testing, test-driven-development | ✅ |
 | 3.3 | Reward engine: coins per task type, daily cap, half reward for "I already did it", all-Daily bonus (unit-tested) | flutter-testing, test-driven-development | ✅ |
 
-## Phase 4: Farm screen
+## Phase 4: Farm screen (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 4.1 | Flame scene: tiles, barn, home, path, two plots, pond/decoration strip, pixel-perfect scaling | flutter-performance, flutter-responsive-layout | ⬜ |
-| 4.2 | Plants on the farm: growth stage from data, tap targets, highlight, plot signs and counts | flutter-ui-patterns | ⬜ |
-| 4.3 | Header (avatar, coins/progress pill, calendar), "Next up" button, barn badge | flutter-ui-design | ⬜ |
-| 4.4 | Capybara NPC walking the path with tip bubbles, day/night tint | flutter-animation | ⬜ |
+| 4.1 | Flame scene: tiles, barn, home, path, two plots, pond/decoration strip, pixel-perfect scaling | flutter-performance, flutter-responsive-layout | ✅ |
+| 4.2 | Plants on the farm: growth stage from data, tap targets, highlight, plot signs and counts | flutter-ui-patterns | ✅ |
+| 4.3 | Header (avatar, coins/progress pill, calendar), "Next up" button, barn badge | flutter-ui-design | ✅ |
+| 4.4 | Capybara NPC walking the path with tip bubbles, day/night tint | flutter-animation | ✅ |
 
 ## Phase 5: Tasks
 | Step | What | Skills | Status |

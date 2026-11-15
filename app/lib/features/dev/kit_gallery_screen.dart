@@ -1,19 +1,24 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/router.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/ui/pixel_button.dart';
 import '../../core/ui/pixel_icon.dart';
 import '../../core/ui/pixel_panel.dart';
+import '../../data/providers.dart';
+import 'demo_seed.dart';
 
 /// Debug-only gallery of every UI-kit part and state (route /dev/kit).
-class KitGalleryScreen extends StatefulWidget {
+class KitGalleryScreen extends ConsumerStatefulWidget {
   const KitGalleryScreen({super.key});
 
   @override
-  State<KitGalleryScreen> createState() => _KitGalleryScreenState();
+  ConsumerState<KitGalleryScreen> createState() => _KitGalleryScreenState();
 }
 
-class _KitGalleryScreenState extends State<KitGalleryScreen> {
+class _KitGalleryScreenState extends ConsumerState<KitGalleryScreen> {
   int _taps = 0;
 
   @override
@@ -24,6 +29,31 @@ class _KitGalleryScreenState extends State<KitGalleryScreen> {
       body: ListView(
         padding: const EdgeInsets.all(Space.lg),
         children: [
+          Row(
+            children: [
+              Expanded(
+                child: PixelButton(
+                  label: 'Seed demo farm',
+                  variant: PixelButtonVariant.teal,
+                  onPressed: () async {
+                    final db = ref.read(dbProvider);
+                    await clearFarm(db);
+                    await seedDemoFarm(ref.read(farmServiceProvider));
+                    if (context.mounted) context.go(Routes.farm);
+                  },
+                ),
+              ),
+              const SizedBox(width: Space.sm),
+              Expanded(
+                child: PixelButton(
+                  label: 'Clear farm',
+                  variant: PixelButtonVariant.paper,
+                  onPressed: () => clearFarm(ref.read(dbProvider)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: Space.lg),
           PixelPanel(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,0 +1,311 @@
+import 'dart:convert';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
+
+import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
+
+import '../data/farm_service.dart';
+import '../domain/plant_engine.dart';
+import '../domain/task.dart';
+import 'farm_layout.dart';
+
+/// Crop-strip frame for a stage (strips are seed·sprout·young·ripe·dormant).
+int frameForStage(PlantStage stage) => switch (stage) {
+  PlantStage.seed || PlantStage.harvested => 0,
+  PlantStage.sprout || PlantStage.resting => 1,
+  PlantStage.young => 2,
+  PlantStage.ripe => 3,
+  PlantStage.dormant => 4,
+};
+
+/// Draws the farm. Flame owns rendering + the animation clock only; taps and
+/// text live in Flutter (see FarmScreen) using the same [FarmViewport].
+class FarmGame extends FlameGame {
+  FarmGame({this.reduceMotion = false});
+
+  FarmViewport? viewport;
+  List<PlantView> plants = const [];
+  bool reduceMotion;
+
+  /// Capybara centre in art px, for Flutter overlays (speech bubble, taps).
+  final capyPosition = ValueNotifier<ui.Offset>(
+    const ui.Offset(FarmLayout.capyX, 200),
+  );
+
+  final _img = <String, ui.Image>{};
+  final _cropH = <String, int>{};
+  ui.Image? _background;
+  final _pixel = ui.Paint()..filterQuality = ui.FilterQuality.none;
+  final _rng = math.Random(3);
+  double _t = 0;
+
+  // capybara walk state
+  double _capyY = 200;
+  double _dir = 1;
+  double _pause = 1.5;
+  @override
+  @override
+  ui.Color backgroundColor() => const ui.Color(0x00000000);
+
+  @override
+  Future<void> onLoad() async {
+    images.prefix = 'assets/';
+    Future<void> load(String key, String path) async =>
+        _img[key] = await images.load(path);
+
+    const cultiva = 'sprites/cultiva';
+    await Future.wait([
+      load('barn', '$cultiva/buildings/barn_red.png'),
+      load('home', '$cultiva/buildings/cottage_teal.png'),
+      load('soil', '$cultiva/tiles/soil_bed.png'),
+      load('pond', '$cultiva/tiles/pond.png'),
+      load('cobble', '$cultiva/tiles/cobble.png'),
+      load('stake', '$cultiva/props/stake.png'),
+      load('capy', '$cultiva/npc/capybara.png'),
+      load('sparkle', '$cultiva/fx/sparkle.png'),
+      load('coin', '$cultiva/fx/coin.png'),
+      load('oak', 'sprites/pack/trees/oak_small.png'),
+      load('bush', 'sprites/pack/props/bush_dark_small.png'),
+      load('fern', 'sprites/pack/props/fern.png'),
+      load('mushroom', 'sprites/pack/props/mushroom_small.png'),
+    ]);
+
+    final manifest = jsonDecode(
+      await rootBundle.loadString('assets/sprites/pack/manifest.json'),
+    ) as Map<String, dynamic>;
+    final crops = manifest['crops'] as Map<String, dynamic>;
+    for (final MapEntry(:key, :value) in crops.entries) {
+      final m = value as Map<String, dynamic>;
+      await load('crop:$key', 'sprites/pack/${m['file']}');
+      _cropH[key] = m['frameH'] as int;
+    }
+    final details = <ui.Image>[];
+    final grass = (manifest['grass_details'] as List).cast<String>();
+    for (var i = 0; i < grass.length; i += 3) {
+      details.add(await images.load('sprites/pack/${grass[i]}'));
+    }
+    final dirt = (manifest['dirt_details'] as List).cast<String>();
+    for (var i = 0; i < dirt.length; i += 9) {
+      details.add(await images.load('sprites/pack/${dirt[i]}'));
+    }
+    _background = _buildBackground(details);
+  }
+
+  // ---------------------------------------------------------------- static layer
+
+  ui.Image _buildBackground(List<ui.Image> details) {
+    const w = FarmLayout.worldW, h = FarmLayout.worldH;
+    final rec = ui.PictureRecorder();
+    final c = ui.Canvas(rec, const ui.Rect.fromLTWH(0, 0, w, h));
+    c.drawRect(
+      const ui.Rect.fromLTWH(0, 0, w, h),
+      ui.Paint()..color = const ui.Color(0xFF96C55F),
+    );
+
+    final blocked = [
+      FarmLayout.barn,
+      FarmLayout.home,
+      ...FarmLayout.paths,
+      FarmLayout.plotA.inflate(3),
+      FarmLayout.plotB.inflate(3),
+      FarmLayout.pond.inflate(2),
+    ];
+    final rng = math.Random(7);
+    for (var i = 0; i < 70 && details.isNotEmpty; i++) {
+      final d = details[rng.nextInt(details.length)];
+      final at = ui.Offset(
+        rng.nextInt((w - d.width).toInt()).toDouble(),
+        rng.nextInt((h - d.height).toInt()).toDouble(),
+      );
+      final r = at & ui.Size(d.width.toDouble(), d.height.toDouble());
+      if (blocked.any((b) => b.overlaps(r))) continue;
+      c.drawImage(d, at, _pixel);
+    }
+
+    // framing props behind buildings
+    _drawAt(c, 'oak', const ui.Offset(72, -26));
+    _drawAt(c, 'fern', const ui.Offset(80, 70));
+    _drawAt(c, 'mushroom', const ui.Offset(70, 250));
+    _drawAt(c, 'bush', const ui.Offset(150, 252));
+
+    for (final p in FarmLayout.paths) {
+      _tile(c, _img['cobble']!, const ui.Rect.fromLTWH(0, 0, 16, 16), p);
+    }
+    _nineTile(c, _img['soil']!, FarmLayout.plotA);
+    _nineTile(c, _img['soil']!, FarmLayout.plotB);
+    _nineTile(c, _img['pond']!, FarmLayout.pond);
+    _drawAt(c, 'barn', FarmLayout.barn.topLeft);
+    _drawAt(c, 'home', FarmLayout.home.topLeft);
+    return rec.endRecording().toImageSync(w.toInt(), h.toInt());
+  }
+
+  void _drawAt(ui.Canvas c, String key, ui.Offset at) {
+    final img = _img[key];
+    if (img != null) c.drawImage(img, at, _pixel);
+  }
+
+  void _tile(ui.Canvas c, ui.Image img, ui.Rect src, ui.Rect dst) {
+    if (dst.width <= 0 || dst.height <= 0) return;
+    c.save();
+    c.clipRect(dst);
+    for (var y = dst.top; y < dst.bottom; y += src.height) {
+      for (var x = dst.left; x < dst.right; x += src.width) {
+        c.drawImageRect(
+          img,
+          src,
+          ui.Rect.fromLTWH(x, y, src.width, src.height),
+          _pixel,
+        );
+      }
+    }
+    c.restore();
+  }
+
+  /// 9-slice with 16px corners; edges and centre are *tiled* (never stretched).
+  void _nineTile(ui.Canvas c, ui.Image img, ui.Rect d, {double k = 16}) {
+    final w = img.width.toDouble(), h = img.height.toDouble();
+    final xs = [
+      (0.0, k, d.left, d.left + k),
+      (k, w - k, d.left + k, d.right - k),
+      (w - k, w, d.right - k, d.right),
+    ];
+    final ys = [
+      (0.0, k, d.top, d.top + k),
+      (k, h - k, d.top + k, d.bottom - k),
+      (h - k, h, d.bottom - k, d.bottom),
+    ];
+    for (final (sx0, sx1, dx0, dx1) in xs) {
+      for (final (sy0, sy1, dy0, dy1) in ys) {
+        _tile(
+          c,
+          img,
+          ui.Rect.fromLTRB(sx0, sy0, sx1, sy1),
+          ui.Rect.fromLTRB(dx0, dy0, dx1, dy1),
+        );
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------- frame loop
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _t += dt;
+    if (reduceMotion) {
+      _capyY = 100;
+    } else if (_pause > 0) {
+      _pause -= dt;
+    } else {
+      _capyY += _dir * 12 * dt;
+      if (_capyY <= FarmLayout.capyMinY || _capyY >= FarmLayout.capyMaxY) {
+        _capyY = _capyY.clamp(FarmLayout.capyMinY, FarmLayout.capyMaxY);
+        _dir = -_dir;
+        _pause = 2 + _rng.nextDouble() * 3;
+      } else if (_rng.nextDouble() < dt * 0.15) {
+        _pause = 2 + _rng.nextDouble() * 3;
+        if (_rng.nextBool()) _dir = -_dir;
+      }
+    }
+    final p = ui.Offset(FarmLayout.capyX, _capyY.roundToDouble());
+    if (p != capyPosition.value) capyPosition.value = p;
+  }
+
+  @override
+  void render(ui.Canvas canvas) {
+    super.render(canvas);
+    final vp = viewport;
+    final bg = _background;
+    if (vp == null || bg == null) return;
+    canvas.save();
+    canvas.translate(vp.offset.dx, vp.offset.dy);
+    canvas.scale(vp.scale);
+    canvas.drawImage(bg, ui.Offset.zero, _pixel);
+    _drawPlants(canvas);
+    _drawCapy(canvas);
+    canvas.restore();
+  }
+
+  void _drawPlants(ui.Canvas c) {
+    final byCell = {for (final p in plants) (p.task.plot, p.task.slot): p};
+    for (final plot in PlotKind.values) {
+      for (var slot = 0; slot < kPlotCapacity; slot++) {
+        final base = FarmLayout.plantBase(plot, slot);
+        final p = byCell[(plot, slot)];
+        if (p == null) {
+          _emptyMarker(c, base);
+          continue;
+        }
+        final crop = _cropH.containsKey(p.task.crop) ? p.task.crop : 'pepper';
+        final img = _img['crop:$crop']!;
+        final fh = _cropH[crop]!.toDouble();
+        final frame = frameForStage(p.stage);
+        final paint = p.stage == PlantStage.resting
+            ? (ui.Paint()
+                ..filterQuality = ui.FilterQuality.none
+                ..color = const ui.Color(0x99FFFFFF))
+            : _pixel;
+        c.drawImageRect(
+          img,
+          ui.Rect.fromLTWH(frame * 32.0, 0, 32, fh),
+          ui.Rect.fromLTWH(base.dx - 16, base.dy - fh, 32, fh),
+          paint,
+        );
+        _drawAt(c, 'stake', ui.Offset(base.dx + 7, base.dy - 10));
+        if (p.stage == PlantStage.ripe) {
+          final f = reduceMotion ? 2 : (_t * 6).floor() % 4;
+          c.drawImageRect(
+            _img['sparkle']!,
+            ui.Rect.fromLTWH(f * 9.0, 0, 9, 9),
+            ui.Rect.fromLTWH(base.dx + 2, base.dy - fh - 2, 9, 9),
+            _pixel,
+          );
+        } else if (p.stage == PlantStage.harvested) {
+          c.drawImageRect(
+            _img['coin']!,
+            const ui.Rect.fromLTWH(0, 0, 10, 10),
+            ui.Rect.fromLTWH(base.dx - 5, base.dy - 16, 10, 10),
+            _pixel,
+          );
+        }
+      }
+    }
+  }
+
+  void _emptyMarker(ui.Canvas c, ui.Offset base) {
+    final p = ui.Paint()..color = const ui.Color(0x55FFF6E0);
+    final cx = base.dx.floorToDouble(), cy = base.dy - 8;
+    c.drawRect(ui.Rect.fromLTWH(cx - 3, cy, 7, 1), p);
+    c.drawRect(ui.Rect.fromLTWH(cx, cy - 3, 1, 7), p);
+  }
+
+  void _drawCapy(ui.Canvas c) {
+    final img = _img['capy'];
+    if (img == null) return;
+    final pos = capyPosition.value;
+    final walking = !reduceMotion && _pause <= 0;
+    final int frame;
+    if (walking) {
+      frame = 2 + (_t * 8).floor() % 4;
+    } else {
+      frame = (_t % 3.2) < 0.15 ? 1 : 0; // occasional blink
+    }
+    final facingLeft = walking && _dir < 0;
+    final dst = ui.Rect.fromCenter(center: pos, width: 22, height: 16);
+    c.save();
+    if (facingLeft) {
+      c.translate(pos.dx, 0);
+      c.scale(-1, 1);
+      c.translate(-pos.dx, 0);
+    }
+    c.drawImageRect(
+      img,
+      ui.Rect.fromLTWH(frame * 22.0, 0, 22, 16),
+      dst,
+      _pixel,
+    );
+    c.restore();
+  }
+}

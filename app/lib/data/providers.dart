@@ -11,6 +11,9 @@ final dbProvider = Provider<CultivaDb>((ref) {
   return db;
 });
 
+/// Test seam: widget tests turn the Flame farm scene off (it animates forever).
+final farmSceneEnabledProvider = Provider<bool>((_) => true);
+
 /// Clock seam for tests.
 final clockProvider = Provider<DateTime Function()>((_) => DateTime.now);
 

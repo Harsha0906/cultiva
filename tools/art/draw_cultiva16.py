@@ -394,6 +394,46 @@ def pond():
     return s.image()
 
 
+PATHSTONE = R("#6e5b4b", "#a8907a", "#c7a896", "#d8c4ac", "#e7dcc4", "#f4eedd")
+
+
+def cobble16():
+    """Seamless 16x16 cobble in the packs' beige path stone."""
+    random.seed(21)
+    seeds = [(1.5, 2.0), (8.5, 1.0), (13.0, 5.5), (4.0, 8.5), (10.5, 10.0), (2.0, 14.0), (14.5, 14.5)]
+    seeds = [(sx + random.uniform(-0.6, 0.6), sy + random.uniform(-0.6, 0.6), random.choice((2, 3, 3, 4)))
+             for sx, sy in seeds]
+
+    def near(x, y):
+        def dist(sx, sy):
+            dx = abs(x + 0.5 - sx)
+            dy = abs(y + 0.5 - sy)
+            return math.hypot(min(dx, 16 - dx), min(dy, 16 - dy) * 1.15)
+        ds = sorted((dist(sx, sy), i) for i, (sx, sy, _) in enumerate(seeds))
+        return ds[0], ds[1]
+    gap = [[False] * 16 for _ in range(16)]
+    tone = [[0] * 16 for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            (d1, i1), (d2, _) = near(x, y)
+            gap[y][x] = d2 - d1 < 1.3
+            tone[y][x] = seeds[i1][2]
+    s = Spr(16, 16)
+    g = lambda x, y: gap[y % 16][x % 16]
+    for y in range(16):
+        for x in range(16):
+            if g(x, y):
+                s.put(x, y, PATHSTONE[1] if not g(x, y - 1) else PATHSTONE[2], PATHSTONE)
+                continue
+            idx = tone[y][x]
+            if g(x, y - 1) or g(x - 1, y):
+                idx += 1
+            if g(x, y + 1) or g(x + 1, y):
+                idx = 1
+            s.put(x, y, PATHSTONE[max(1, min(5, idx))], PATHSTONE)
+    return s.image()
+
+
 def fx_sparkle():
     sheet = Image.new("RGBA", (9 * 4, 9))
     for f, r in enumerate((1, 2, 4, 2)):
@@ -471,6 +511,7 @@ def main():
         "props/stake": stake(),
         "tiles/soil_bed": soil_bed(),
         "tiles/pond": pond(),
+        "tiles/cobble": cobble16(),
         "fx/sparkle": fx_sparkle(),
         "fx/coin": fx_coin(),
         "fx/dust": fx_dust(),
