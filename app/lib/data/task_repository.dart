@@ -151,9 +151,4 @@ class TaskRepository {
     );
     return next;
   }
-
-  Future<void> rename(String id, String title) =>
-      (_db.update(_db.tasks)..where((t) => t.id.equals(id))).write(
-        TasksCompanion(title: Value(title.trim())),
-      );
 }

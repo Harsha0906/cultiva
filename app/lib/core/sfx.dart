@@ -44,7 +44,11 @@ class AudioSfxPlayer implements SfxPlayer {
     if (!_configured) await _configure();
     var p = _players[name];
     if (p == null) {
-      p = _players[name] = AudioPlayer(playerId: 'sfx_${name.name}');
+      p = _players[name] = AudioPlayer(playerId: 'sfx_${name.name}')
+        // Blips never need playback position. The default updater asks for a
+        // new frame every vsync while "playing", and low-latency mode never
+        // reports completion, so it would keep the app from ever idling.
+        ..positionUpdater = null;
       await p.setPlayerMode(PlayerMode.lowLatency);
       await p.setReleaseMode(ReleaseMode.stop);
     }

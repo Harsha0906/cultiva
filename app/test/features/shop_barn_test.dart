@@ -5,8 +5,10 @@ import 'package:cultiva/data/providers.dart';
 import 'package:cultiva/data/shop_service.dart';
 import 'package:cultiva/domain/farm_day.dart';
 import 'package:cultiva/domain/rewards.dart';
+import 'package:cultiva/domain/shop.dart';
 import 'package:cultiva/domain/task.dart';
 import 'package:cultiva/features/barn/barn_screen.dart';
+import 'package:cultiva/features/barn/spot_picker.dart';
 import 'package:cultiva/features/shop/shop_screen.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -87,5 +89,45 @@ void main() {
     expect(find.text('+8'), findsOneWidget);
     expect(find.text('Old stump'), findsOneWidget);
     expect(find.text('On the farm · spot 1'), findsOneWidget);
+  });
+
+  testWidgets('spot picker places, swaps out, and takes back', (tester) async {
+    await farm.progress.append(300, LedgerReason.harvest, day: mon);
+    await shop.buy('stump');
+    await shop.buy('mushroom_small');
+    await shop.place('mushroom_small', 1);
+    final stump = kShopCatalogue.firstWhere((i) => i.id == 'stump');
+    await tester.pumpWidget(
+      host(
+        Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => showSpotPicker(context, stump),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    Future<void> open() async {
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    await open();
+    expect(find.text('Spot 1\nempty'), findsOneWidget);
+    // Placing on the mushroom's spot sends the mushroom back to storage.
+    await tester.tap(find.textContaining('Spot 2'));
+    await tester.pumpAndSettle();
+    var placed = await shop.placed();
+    expect(placed[1]?.id, 'stump');
+    expect(placed.values.any((i) => i.id == 'mushroom_small'), isFalse);
+
+    await open();
+    expect(find.text('Spot 2\nhere'), findsOneWidget);
+    await tester.tap(find.text('Take back to storage'));
+    await tester.pumpAndSettle();
+    placed = await shop.placed();
+    expect(placed, isEmpty);
   });
 }
