@@ -69,7 +69,18 @@ Future<void> seedDemoFarm(FarmService farm) async {
 /// Debug-only: wipes all farm data (tasks, progress, coins).
 Future<void> clearFarm(CultivaDb db) => db.transaction(() async {
   await db.delete(db.coinLedger).go();
+  await db.delete(db.inventory).go();
   await db.delete(db.focusSessions).go();
   await db.delete(db.completions).go();
   await db.delete(db.tasks).go();
 });
+
+/// Debug-only: grants coins for testing the shop (recorded as a refund row,
+/// so it never counts toward the daily earning cap).
+Future<void> grantDebugCoins(FarmService farm, int coins) async =>
+    farm.progress.append(
+      coins,
+      LedgerReason.refund,
+      day: await farm.today(),
+      refId: 'debug',
+    );

@@ -53,6 +53,14 @@ class _KitGalleryScreenState extends ConsumerState<KitGalleryScreen> {
               ),
             ],
           ),
+          const SizedBox(height: Space.sm),
+          PixelButton(
+            label: '+300 coins (debug)',
+            variant: PixelButtonVariant.wood,
+            expand: true,
+            onPressed: () =>
+                grantDebugCoins(ref.read(farmServiceProvider), 300),
+          ),
           const SizedBox(height: Space.lg),
           PixelPanel(
             child: Column(
@@ -106,6 +114,14 @@ class _KitGalleryScreenState extends ConsumerState<KitGalleryScreen> {
             variant: PixelButtonVariant.teal,
             expand: true,
             onPressed: () {},
+          ),
+          const SizedBox(height: Space.sm),
+          PixelButton(
+            label: '+300 coins (debug)',
+            variant: PixelButtonVariant.wood,
+            expand: true,
+            onPressed: () =>
+                grantDebugCoins(ref.read(farmServiceProvider), 300),
           ),
           const SizedBox(height: Space.lg),
           PixelPanel(

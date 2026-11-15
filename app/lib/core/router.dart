@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../features/barn/barn_screen.dart';
 import '../features/dev/kit_gallery_screen.dart';
 import '../features/farm/farm_screen.dart';
 import '../features/focus/focus_screen.dart';
@@ -22,6 +23,7 @@ abstract final class Routes {
   static const calendar = '/progress?view=calendar';
   static String focus(String taskId) => '/focus/${Uri.encodeComponent(taskId)}';
   static const devKit = '/dev/kit';
+  static const barn = '/barn';
 }
 
 final _rootKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -69,6 +71,11 @@ GoRouter buildRouter({String initialLocation = Routes.farm}) => GoRouter(
         parentNavigatorKey: _rootKey,
         builder: (_, _) => const KitGalleryScreen(),
       ),
+    GoRoute(
+      path: Routes.barn,
+      parentNavigatorKey: _rootKey,
+      builder: (_, _) => const BarnScreen(),
+    ),
     GoRoute(
       path: Routes.profile,
       parentNavigatorKey: _rootKey,

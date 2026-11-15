@@ -22,11 +22,17 @@ abstract final class FarmLayout {
   static const plotA = Rect.fromLTWH(6, 112, 160, 48);
   static const plotB = Rect.fromLTWH(6, 188, 160, 48);
   static const pond = Rect.fromLTWH(8, 246, 56, 36);
+
+  /// Bottom-centre of each decoration spot (between the pond and the path).
   static const decoSpots = [
-    Offset(84, 262),
-    Offset(112, 262),
-    Offset(140, 262),
+    Offset(82, 286),
+    Offset(118, 286),
+    Offset(154, 286),
   ];
+
+  /// Tap/outline area of a decoration spot.
+  static Rect decoRect(int spot) =>
+      Rect.fromLTWH(decoSpots[spot].dx - 18, decoSpots[spot].dy - 40, 36, 40);
 
   static const cellW = 26.0;
   static const cellsX0 = 8.0;
@@ -64,7 +70,7 @@ abstract final class FarmLayout {
   );
 }
 
-enum FarmHitKind { cell, barn, home, capybara, none }
+enum FarmHitKind { cell, barn, home, capybara, decoSpot, none }
 
 final class FarmHit {
   const FarmHit(this.kind, {this.plot, this.slot});
@@ -137,6 +143,11 @@ final class FarmViewport {
         if (FarmLayout.cell(plot, s).contains(p)) {
           return FarmHit(FarmHitKind.cell, plot: plot, slot: s);
         }
+      }
+    }
+    for (var s = 0; s < FarmLayout.decoSpots.length; s++) {
+      if (FarmLayout.decoRect(s).contains(p)) {
+        return FarmHit(FarmHitKind.decoSpot, slot: s);
       }
     }
     if (FarmLayout.barn.contains(p)) return const FarmHit(FarmHitKind.barn);

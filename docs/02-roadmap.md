@@ -60,11 +60,11 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 6.1 | Timer screen: timestamp-based countdown, growth in real time, pause, give up, "I already did it" | dart-concurrency, flutter-animation | ✅ |
 | 6.2 | Keeps running in the background: timestamp timer + ongoing countdown notification (no foreground service needed; see step doc) and a "done" notification, clock-change guard | flutter-background-execution, flutter-notifications | ✅ |
 
-## Phase 7: Shop & Barn
+## Phase 7: Shop & Barn (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 7.1 | Shop: decoration catalogue, buy with coins (ledger) | flutter-ui-patterns | ⬜ |
-| 7.2 | Barn storage: today's harvest, owned decorations, place items in decoration spots | flutter-ui-patterns | ⬜ |
+| 7.1 | Shop: decoration catalogue, buy with coins (ledger) | flutter-ui-patterns | ✅ |
+| 7.2 | Barn storage: today's harvest, owned decorations, place items in decoration spots | flutter-ui-patterns | ✅ |
 
 ## Phase 8: Progress
 | Step | What | Skills | Status |

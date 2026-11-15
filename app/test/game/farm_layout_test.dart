@@ -50,7 +50,11 @@ void main() {
     test('buildings and empty grass', () {
       expect(vp.hitTest(at(40, 40)).kind, FarmHitKind.barn);
       expect(vp.hitTest(at(150, 40)).kind, FarmHitKind.home);
-      expect(vp.hitTest(at(100, 250)).kind, FarmHitKind.none);
+      expect(vp.hitTest(at(100, 86)).kind, FarmHitKind.none);
+      expect(
+        vp.hitTest(at(118, 270)),
+        const FarmHit(FarmHitKind.decoSpot, slot: 1),
+      );
     });
 
     test('capybara wins over what is behind it', () {

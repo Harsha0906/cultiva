@@ -8,6 +8,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import '../data/farm_service.dart';
 import '../domain/plant_engine.dart';
+import '../domain/shop.dart';
 import '../domain/task.dart';
 import 'farm_layout.dart';
 
@@ -27,6 +28,12 @@ class FarmGame extends FlameGame {
 
   FarmViewport? viewport;
   List<PlantView> plants = const [];
+
+  /// Placed decorations: spot index -> ShopItem id.
+  Map<int, String> decorations = const {};
+
+  /// Show dashed outlines on empty spots (player owns something unplaced).
+  bool showEmptySpots = false;
   bool reduceMotion;
 
   /// Capybara centre in art px, for Flutter overlays (speech bubble, taps).
@@ -92,6 +99,9 @@ class FarmGame extends FlameGame {
     for (var i = 0; i < dirt.length; i += 9) {
       details.add(await images.load('sprites/pack/${dirt[i]}'));
     }
+    for (final item in kShopCatalogue) {
+      await load('deco:${item.id}', 'sprites/pack/${item.sprite}.png');
+    }
     _background = _buildBackground(details);
   }
 
@@ -129,8 +139,6 @@ class FarmGame extends FlameGame {
     // framing props behind buildings
     _drawAt(c, 'oak', const ui.Offset(72, -26));
     _drawAt(c, 'fern', const ui.Offset(80, 70));
-    _drawAt(c, 'mushroom', const ui.Offset(70, 250));
-    _drawAt(c, 'bush', const ui.Offset(150, 252));
 
     for (final p in FarmLayout.paths) {
       _tile(c, _img['cobble']!, const ui.Rect.fromLTWH(0, 0, 16, 16), p);
@@ -232,6 +240,7 @@ class FarmGame extends FlameGame {
     canvas.scale(vp.scale);
     canvas.drawImage(bg, ui.Offset.zero, _pixel);
     _drawPlants(canvas);
+    _drawDecorations(canvas);
     _drawCapy(canvas);
     _drawParticles(canvas);
     canvas.restore();
@@ -338,6 +347,31 @@ class FarmGame extends FlameGame {
           ),
           paint,
         );
+      }
+    }
+  }
+
+  void _drawDecorations(ui.Canvas c) {
+    for (var s = 0; s < FarmLayout.decoSpots.length; s++) {
+      final base = FarmLayout.decoSpots[s];
+      final id = decorations[s];
+      final img = id == null ? null : _img['deco:$id'];
+      if (img != null) {
+        c.drawImage(
+          img,
+          ui.Offset(
+            (base.dx - img.width / 2).floorToDouble(),
+            base.dy - img.height,
+          ),
+          _pixel,
+        );
+      } else if (showEmptySpots) {
+        final r = FarmLayout.decoRect(s).deflate(4);
+        final p = ui.Paint()..color = const ui.Color(0x66FFF6E0);
+        for (var x = r.left; x < r.right; x += 4) {
+          c.drawRect(ui.Rect.fromLTWH(x, r.bottom - 1, 2, 1), p);
+          c.drawRect(ui.Rect.fromLTWH(x, r.bottom - 12, 2, 1), p);
+        }
       }
     }
   }

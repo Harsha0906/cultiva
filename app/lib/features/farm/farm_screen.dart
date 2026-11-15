@@ -169,10 +169,8 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
         unawaited(_cellTap(view, hit.plot!, hit.slot!));
       case FarmHitKind.capybara || FarmHitKind.home:
         _say(capyTip(view, rotation: _tipRotation++));
-      case FarmHitKind.barn:
-        _toast(
-          'Storage opens soon. ${view.harvestedToday} crops harvested today.',
-        );
+      case FarmHitKind.barn || FarmHitKind.decoSpot:
+        unawaited(context.push(Routes.barn));
       case FarmHitKind.none:
         break;
     }
@@ -184,7 +182,9 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
     final sceneOn = ref.watch(farmSceneEnabledProvider);
     _game
       ..reduceMotion = MediaQuery.disableAnimationsOf(context)
-      ..plants = view?.plants ?? const [];
+      ..plants = view?.plants ?? const []
+      ..decorations = view?.decorations ?? const {}
+      ..showEmptySpots = view?.hasUnplaced ?? false;
     final tint = tintFor(DateTime.now().hour);
 
     return Scaffold(

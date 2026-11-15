@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/farm_service.dart';
 import '../../data/providers.dart';
+import '../../data/shop_service.dart';
 import '../../domain/avatar.dart';
 import '../../domain/farm_day.dart';
 import '../../domain/plant_engine.dart';
@@ -15,12 +16,20 @@ final class FarmView {
     required this.plants,
     required this.balance,
     required this.avatar,
+    this.decorations = const {},
+    this.hasUnplaced = false,
   });
 
   final FarmDay day;
   final List<PlantView> plants;
   final int balance;
   final Avatar avatar;
+
+  /// Spot index -> decoration item id.
+  final Map<int, String> decorations;
+
+  /// The player owns a decoration that isn't on the farm yet.
+  final bool hasUnplaced;
 
   Iterable<PlantView> get due =>
       plants.where((p) => p.stage != PlantStage.resting);
@@ -70,31 +79,39 @@ PlantView? nextUp(Iterable<PlantView> plants) {
   return open.isEmpty ? null : open.first;
 }
 
-Future<FarmView> loadFarmView(FarmService farm) async {
+Future<FarmView> loadFarmView(FarmService farm, [ShopService? shop]) async {
   await farm.rollover();
   final day = await farm.today();
+  final owned = await shop?.owned() ?? const <OwnedItem>[];
   return FarmView(
     day: day,
     plants: await farm.plants(day),
     balance: await farm.progress.balance(),
     avatar: await farm.settings.avatar(),
+    decorations: {
+      for (final o in owned)
+        if (o.spot != null) o.spot!: o.item.id,
+    },
+    hasUnplaced: owned.any((o) => o.spot == null),
   );
 }
 
 /// Live farm state; re-computed whenever farm tables change.
 final farmViewProvider = StreamProvider<FarmView>((ref) async* {
   final farm = ref.watch(farmServiceProvider);
+  final shop = ref.watch(shopServiceProvider);
   final db = ref.watch(dbProvider);
-  yield await loadFarmView(farm);
+  yield await loadFarmView(farm, shop);
   final changes = db.tableUpdates(
     TableUpdateQuery.onAllTables([
       db.tasks,
       db.completions,
       db.coinLedger,
       db.settings,
+      db.inventory,
     ]),
   );
   await for (final _ in changes) {
-    yield await loadFarmView(farm);
+    yield await loadFarmView(farm, shop);
   }
 });
