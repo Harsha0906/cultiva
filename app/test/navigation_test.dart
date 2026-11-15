@@ -2,6 +2,7 @@ import 'package:cultiva/app.dart';
 import 'package:cultiva/core/router.dart';
 import 'package:cultiva/data/db.dart';
 import 'package:cultiva/data/providers.dart';
+import 'package:cultiva/data/settings_repository.dart';
 import 'package:cultiva/features/shell/app_shell.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
@@ -11,12 +12,14 @@ import 'package:flutter_test/flutter_test.dart';
 Future<void> pumpApp(
   WidgetTester tester, {
   String location = Routes.farm,
+  bool onboarded = true,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         dbProvider.overrideWith((ref) {
           final db = CultivaDb(NativeDatabase.memory());
+          SettingsRepository(db).setOnboarded(onboarded).ignore();
           ref.onDispose(db.close);
           return db;
         }),
@@ -79,6 +82,15 @@ void main() {
     await tester.tap(find.text('Back to farm'));
     await tester.pumpAndSettle();
     expect(find.text('Plant your first task'), findsOneWidget);
+  });
+
+  testWidgets('first launch redirects to onboarding', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await pumpApp(tester, onboarded: false);
+    expect(find.text('Grandma left you a little farm.'), findsOneWidget);
+    expect(find.byType(PixelNavBar), findsNothing);
   });
 
   testWidgets('unknown route shows not-found', (tester) async {

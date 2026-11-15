@@ -61,6 +61,16 @@ class _KitGalleryScreenState extends ConsumerState<KitGalleryScreen> {
             onPressed: () =>
                 grantDebugCoins(ref.read(farmServiceProvider), 300),
           ),
+          const SizedBox(height: Space.sm),
+          PixelButton(
+            label: 'Replay onboarding',
+            variant: PixelButtonVariant.paper,
+            expand: true,
+            onPressed: () async {
+              await ref.read(farmServiceProvider).settings.setOnboarded(false);
+              if (context.mounted) context.go(Routes.onboarding);
+            },
+          ),
           const SizedBox(height: Space.lg),
           PixelPanel(
             child: Column(

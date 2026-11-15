@@ -47,6 +47,7 @@ dependencies:
   fl_chart: ^1.3.1
   intl: ^0.20.3
   uuid: ^4.6.0
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -82,6 +83,7 @@ flutter:
     - assets/sprites/cultiva/props/
     - assets/sprites/cultiva/tiles/
     - assets/sprites/cultiva/fx/
+    - assets/sfx/
     # Generated from CraftPix packs by tools/art/build_pack_assets.py (git-ignored).
     - assets/sprites/pack/
     - assets/sprites/pack/crops/

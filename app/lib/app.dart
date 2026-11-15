@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'core/app_prefs.dart';
 import 'core/notifications.dart';
 import 'core/router.dart';
+import 'core/sfx.dart';
 import 'core/theme/app_theme.dart';
 import 'data/providers.dart';
 
@@ -22,6 +23,7 @@ class CultivaApp extends ConsumerStatefulWidget {
 class _CultivaAppState extends ConsumerState<CultivaApp> {
   late final GoRouter _router = buildRouter(
     initialLocation: widget.initialLocation,
+    onboarded: () => ref.read(farmServiceProvider).settings.onboarded(),
   );
   StreamSubscription<String>? _taps;
 
@@ -52,6 +54,7 @@ class _CultivaAppState extends ConsumerState<CultivaApp> {
   Widget build(BuildContext context) {
     final prefs = ref.watch(appPrefsProvider).value ?? const AppPrefs();
     AppFeedback.hapticsOn = prefs.haptics;
+    Sfx.enabled = prefs.sound;
     return MaterialApp.router(
       title: 'Cultiva',
       debugShowCheckedModeBanner: false,
