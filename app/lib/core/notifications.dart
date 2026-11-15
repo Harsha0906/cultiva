@@ -29,7 +29,17 @@ abstract class AppNotifier {
   Stream<String> get taps;
 }
 
-int notificationIdFor(FarmTask task) => task.id.hashCode & 0x7fffffff;
+/// Stable across app restarts (String.hashCode is not guaranteed to be), so a
+/// focus notification posted before a restart can still be cancelled after.
+/// 32-bit FNV-1a, kept positive and clear of the fixed reminder id.
+int notificationIdFor(FarmTask task) {
+  var h = 0x811c9dc5;
+  for (final c in task.id.codeUnits) {
+    h = ((h ^ c) * 0x01000193) & 0xffffffff;
+  }
+  final id = h & 0x7fffffff;
+  return id == kDailyReminderId ? id + 1 : id;
+}
 String focusRouteFor(FarmTask task) => '/focus/${task.id}';
 
 /// Fixed id for the daily reminder.

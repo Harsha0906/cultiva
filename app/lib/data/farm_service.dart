@@ -197,7 +197,7 @@ class FarmService {
   });
 
   /// Undoes a completion that hasn't been harvested yet (plant goes back).
-  Future<void> uncomplete(FarmTask task) async {
+  Future<void> uncomplete(FarmTask task) => _db.transaction(() async {
     final day = await today();
     final c = await progress.forTaskOn(task.id, day);
     if (c == null) return;
@@ -205,5 +205,5 @@ class FarmService {
       throw const FarmActionException('Undo the harvest first.');
     }
     await progress.deleteCompletion(c.id);
-  }
+  });
 }

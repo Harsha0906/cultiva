@@ -54,10 +54,32 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
     super.initState();
     // Re-evaluate the farm day and tint every minute (day rollover at reset hour).
     _tick = Timer.periodic(const Duration(minutes: 1), (_) {
-      if (!mounted) return;
+      if (!mounted || !_visible) return;
       ref.invalidate(farmViewProvider);
       setState(() {});
     });
+  }
+
+  bool _visible = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Flame's game loop uses a plain Ticker that ignores TickerMode, so it kept
+    // running (about half the emulator's CPU) while another tab or a pushed
+    // screen hid the farm. Pause it whenever the farm is not on screen.
+    final visible = TickerMode.valuesOf(context).enabled;
+    if (visible == _visible) return;
+    _visible = visible;
+    if (visible) {
+      _game.resumeEngine();
+      // Catch up on a day rollover missed while hidden (not during build).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ref.invalidate(farmViewProvider);
+      });
+    } else {
+      _game.pauseEngine();
+    }
   }
 
   @override
