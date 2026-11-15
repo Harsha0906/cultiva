@@ -32,12 +32,12 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 2.3 | UI kit: 9-slice panels, wood/teal/paper buttons, pixel nav and header icons, fonts (Pixelify Sans + Nunito), theme tokens | flutter-ui-design, design-system | ✅ |
 | 2.4 | Player avatar set (style decided by the founder) | flutter-ui-design | ✅ |
 
-## Phase 3: Data & core logic
+## Phase 3: Data & core logic (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 3.1 | Drift database: Task, CompletionLog, FocusSession, JournalEntry, Inventory, CoinLedger, Settings, plus repositories | flutter-persistence | ⬜ |
-| 3.2 | Day engine: 4 AM reset, repeat days, daily replant, dormant/revive, plot capacity of 6 (unit-tested) | dart-language, flutter-testing, test-driven-development | ⬜ |
-| 3.3 | Reward engine: coins per task type, daily cap, half reward for "I already did it", all-Daily bonus (unit-tested) | flutter-testing, test-driven-development | ⬜ |
+| 3.1 | Drift database: Task, CompletionLog, FocusSession, JournalEntry, Inventory, CoinLedger, Settings, plus repositories | flutter-persistence | ✅ |
+| 3.2 | Day engine: 4 AM reset, repeat days, daily replant, dormant/revive, plot capacity of 6 (unit-tested) | dart-language, flutter-testing, test-driven-development | ✅ |
+| 3.3 | Reward engine: coins per task type, daily cap, half reward for "I already did it", all-Daily bonus (unit-tested) | flutter-testing, test-driven-development | ✅ |
 
 ## Phase 4: Farm screen
 | Step | What | Skills | Status |
