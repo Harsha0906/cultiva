@@ -36,6 +36,26 @@ final class DaySummary {
       done.isEmpty && focusMinutes == 0 && mood == null && (note ?? '').isEmpty;
 }
 
+/// All-time totals for the Profile screen.
+final class Lifetime {
+  const Lifetime({
+    required this.firstDay,
+    required this.daysFarmed,
+    required this.harvested,
+    required this.focusMinutes,
+    required this.coinsEarned,
+    required this.bestDayCount,
+  });
+
+  /// Earliest day with a planted task or any coins (null on a fresh install).
+  final FarmDay? firstDay;
+  final int daysFarmed;
+  final int harvested;
+  final int focusMinutes;
+  final int coinsEarned;
+  final int bestDayCount;
+}
+
 /// Read-only aggregates for the Progress tab.
 class StatsService {
   StatsService(
@@ -82,6 +102,36 @@ class StatsService {
       coins: await _farm.progress.earnedOn(day),
       mood: j?.mood,
       note: j?.note,
+    );
+  }
+
+  Future<Lifetime> lifetime() async {
+    final completions = await _db.select(_db.completions).get();
+    final perDay = <String, int>{};
+    var harvested = 0, minutes = 0;
+    for (final c in completions) {
+      perDay[c.day] = (perDay[c.day] ?? 0) + 1;
+      if (c.harvestedAt != null) harvested++;
+      minutes += c.minutes;
+    }
+    final ledger = await _db.select(_db.coinLedger).get();
+    const earning = {'harvest', 'fullBasket', 'unharvest'};
+    final coins = ledger
+        .where((l) => earning.contains(l.reason))
+        .fold<int>(0, (s, l) => s + l.delta);
+    final tasks = await _db.select(_db.tasks).get();
+    final days = [
+      ...tasks.map((t) => t.createdDay),
+      ...ledger.map((l) => l.day),
+      ...perDay.keys,
+    ]..sort();
+    return Lifetime(
+      firstDay: days.isEmpty ? null : FarmDay.parse(days.first),
+      daysFarmed: perDay.length,
+      harvested: harvested,
+      focusMinutes: minutes,
+      coinsEarned: coins,
+      bestDayCount: perDay.values.fold(0, (m, v) => v > m ? v : m),
     );
   }
 

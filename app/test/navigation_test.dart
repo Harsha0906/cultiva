@@ -63,7 +63,7 @@ void main() {
     await pumpApp(tester);
     await tester.tap(find.bySemanticsLabel('Profile'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('animal avatars'), findsOneWidget);
+    expect(find.text('Choose your avatar'), findsOneWidget);
     expect(find.byType(PixelNavBar), findsNothing);
 
     await tester.pageBack();

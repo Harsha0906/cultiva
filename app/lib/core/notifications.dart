@@ -20,12 +20,30 @@ abstract class AppNotifier {
   /// Removes both (paused, gave up, or finished in-app).
   Future<void> focusStopped(FarmTask task);
 
+  /// One cozy reminder a day at [minutesAfterMidnight] (local time).
+  Future<void> scheduleDailyReminder(int minutesAfterMidnight);
+
+  Future<void> cancelDailyReminder();
+
   /// Routes to open when the player taps a notification while the app runs.
   Stream<String> get taps;
 }
 
 int notificationIdFor(FarmTask task) => task.id.hashCode & 0x7fffffff;
 String focusRouteFor(FarmTask task) => '/focus/${task.id}';
+
+/// Fixed id for the daily reminder.
+const kDailyReminderId = 990001;
+
+/// Next local occurrence of [minutesAfterMidnight] strictly after [now].
+DateTime nextDailyAt(DateTime now, int minutesAfterMidnight) {
+  final today = DateTime(
+    now.year,
+    now.month,
+    now.day,
+  ).add(Duration(minutes: minutesAfterMidnight));
+  return today.isAfter(now) ? today : today.add(const Duration(days: 1));
+}
 
 class NoopNotifier implements AppNotifier {
   const NoopNotifier();
@@ -36,11 +54,18 @@ class NoopNotifier implements AppNotifier {
   @override
   Future<void> focusStopped(FarmTask task) async {}
   @override
+  Future<void> scheduleDailyReminder(int minutesAfterMidnight) async {}
+  @override
+  Future<void> cancelDailyReminder() async {}
+  @override
   Stream<String> get taps => const Stream.empty();
 }
 
 /// Records calls for tests.
 class FakeNotifier implements AppNotifier {
+  FakeNotifier({this.allowPermission = true});
+
+  final bool allowPermission;
   final log = <String>[];
   final _taps = StreamController<String>.broadcast();
   void tap(String route) => _taps.add(route);
@@ -48,7 +73,7 @@ class FakeNotifier implements AppNotifier {
   @override
   Future<bool> requestPermission() async {
     log.add('permission');
-    return true;
+    return allowPermission;
   }
 
   @override
@@ -58,6 +83,13 @@ class FakeNotifier implements AppNotifier {
   @override
   Future<void> focusStopped(FarmTask task) async =>
       log.add('stopped:${task.title}');
+
+  @override
+  Future<void> scheduleDailyReminder(int minutesAfterMidnight) async =>
+      log.add('reminder:$minutesAfterMidnight');
+
+  @override
+  Future<void> cancelDailyReminder() async => log.add('reminder:off');
 
   @override
   Stream<String> get taps => _taps.stream;
@@ -87,6 +119,16 @@ class LocalNotifier implements AppNotifier {
     description: 'Tells you when a focus session has ripened a plant.',
     importance: Importance.high,
   );
+  static const _reminder = AndroidNotificationChannel(
+    'daily_reminder',
+    'Daily reminder',
+    description: 'One gentle nudge a day to tend your farm.',
+  );
+
+  AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
 
   Future<void> init() async {
     tzdata.initializeTimeZones();
@@ -99,12 +141,9 @@ class LocalNotifier implements AppNotifier {
         if (route != null && route.startsWith('/')) _taps.add(route);
       },
     );
-    final android = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    await android?.createNotificationChannel(_ongoing);
-    await android?.createNotificationChannel(_done);
+    await _android?.createNotificationChannel(_ongoing);
+    await _android?.createNotificationChannel(_done);
+    await _android?.createNotificationChannel(_reminder);
     final launch = await _plugin.getNotificationAppLaunchDetails();
     final payload = launch?.notificationResponse?.payload;
     if ((launch?.didNotificationLaunchApp ?? false) &&
@@ -115,13 +154,8 @@ class LocalNotifier implements AppNotifier {
   }
 
   @override
-  Future<bool> requestPermission() async {
-    final android = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    return await android?.requestNotificationsPermission() ?? false;
-  }
+  Future<bool> requestPermission() async =>
+      await _android?.requestNotificationsPermission() ?? false;
 
   @override
   Future<void> focusStarted(FarmTask task, DateTime endsAt) async {
@@ -179,6 +213,42 @@ class LocalNotifier implements AppNotifier {
       await _plugin.cancel(id: notificationIdFor(task));
     } catch (e) {
       debugPrint('focusStopped cancel failed: $e');
+    }
+  }
+
+  @override
+  Future<void> scheduleDailyReminder(int minutesAfterMidnight) async {
+    try {
+      await _plugin.cancel(id: kDailyReminderId);
+      final next = nextDailyAt(DateTime.now(), minutesAfterMidnight);
+      await _plugin.zonedSchedule(
+        id: kDailyReminderId,
+        // Local next occurrence -> UTC instant; repeats daily at that time.
+        scheduledDate: tz.TZDateTime.from(next.toUtc(), tz.UTC),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        title: 'Your sprouts are waiting',
+        body: 'Plant or tend one thing today.',
+        payload: '/farm',
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            _reminder.id,
+            _reminder.name,
+            channelDescription: _reminder.description,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('scheduleDailyReminder failed: $e');
+    }
+  }
+
+  @override
+  Future<void> cancelDailyReminder() async {
+    try {
+      await _plugin.cancel(id: kDailyReminderId);
+    } catch (e) {
+      debugPrint('cancelDailyReminder failed: $e');
     }
   }
 

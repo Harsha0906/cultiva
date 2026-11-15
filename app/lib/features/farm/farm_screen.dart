@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flame/game.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../core/app_prefs.dart';
 
 import '../../core/router.dart';
 import '../../core/theme/text.dart';
@@ -134,7 +135,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
         case PlantStage.ripe:
           final coins = await farm.harvest(p.task);
           _celebrate(plot, slot);
-          unawaited(HapticFeedback.mediumImpact());
+          unawaited(AppFeedback.medium());
           _toast(
             coins > 0
                 ? '+$coins coins from ${p.task.title}'
@@ -152,7 +153,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
             if (mounted) await context.push(Routes.focus(p.task.id));
           } else {
             await farm.complete(p.task);
-            unawaited(HapticFeedback.lightImpact());
+            unawaited(AppFeedback.light());
             _toast('${p.task.title} is ripe. Tap it to harvest!');
           }
       }

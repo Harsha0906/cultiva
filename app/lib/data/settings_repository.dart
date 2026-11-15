@@ -39,7 +39,8 @@ class SettingsRepository {
 
   Future<String> farmerName() async => (await _get(kFarmerName)) ?? 'Farmer';
   Future<void> setFarmerName(String name) {
-    final n = name.trim();
+    var n = name.trim();
+    if (n.length > 24) n = n.substring(0, 24);
     return _set(kFarmerName, n.isEmpty ? 'Farmer' : n);
   }
 
@@ -62,6 +63,17 @@ class SettingsRepository {
   Future<void> setSound(bool v) => _set(kSound, '$v');
   Future<bool> haptics() => _flag(kHaptics, true);
   Future<void> setHaptics(bool v) => _set(kHaptics, '$v');
+  static const kReminderOn = 'reminder_on';
+  static const kReduceMotion = 'reduce_motion';
+
+  /// Daily reminder is opt-in (off until the player turns it on).
+  Future<bool> reminderEnabled() => _flag(kReminderOn, false);
+  Future<void> setReminderEnabled(bool v) => _set(kReminderOn, '$v');
+
+  /// App-level Reduce Motion (the system setting also applies).
+  Future<bool> reduceMotion() => _flag(kReduceMotion, false);
+  Future<void> setReduceMotion(bool v) => _set(kReduceMotion, '$v');
+
   Future<bool> onboarded() => _flag(kOnboarded, false);
   Future<void> setOnboarded(bool v) => _set(kOnboarded, '$v');
 }

@@ -1,6 +1,7 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../core/app_prefs.dart';
 
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
@@ -166,7 +167,7 @@ class _ItemCard extends ConsumerWidget {
       builder: (_) => _BuySheet(item: item),
     );
     if (bought != true || !context.mounted) return;
-    await HapticFeedback.lightImpact();
+    await AppFeedback.light();
     if (!context.mounted) return;
     ScaffoldMessenger.maybeOf(context)?.showSnackBar(
       SnackBar(

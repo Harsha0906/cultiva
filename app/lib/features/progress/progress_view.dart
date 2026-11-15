@@ -22,6 +22,7 @@ Stream<T> _live<T>(
         db.journal,
         db.focusSessions,
         db.tasks,
+        db.settings, // reset hour changes which day is "today"
       ]),
     ),
     () async => load(stats, await farm.today()),

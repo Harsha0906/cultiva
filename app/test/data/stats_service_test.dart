@@ -77,6 +77,26 @@ void main() {
     expect(w.last.day, mon);
   });
 
+  test('lifetime totals across days', () async {
+    expect((await stats.lifetime()).firstDay, isNull);
+    final read = await daily('Read', 30);
+    final walk = await daily('Walk', 20);
+    await farm.complete(read);
+    await farm.harvest(read); // Mon: 12
+    await farm.complete(walk); // Mon: ripe
+    now = DateTime(2026, 11, 17, 9);
+    await farm.complete(read);
+    await farm.harvest(read); // Tue: 12 (+ Mon's walk auto-harvest below)
+    await farm.rollover();
+    final l = await stats.lifetime();
+    expect(l.firstDay, mon);
+    expect(l.daysFarmed, 2);
+    expect(l.harvested, 3);
+    expect(l.focusMinutes, 30 + 20 + 30);
+    expect(l.bestDayCount, 2);
+    expect(l.coinsEarned, await farm.progress.balance());
+  });
+
   test('month stops at today', () async {
     final m = await stats.month(2026, 11, mon);
     expect(m, hasLength(16));

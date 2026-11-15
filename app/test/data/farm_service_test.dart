@@ -221,6 +221,10 @@ void main() {
       expect(await s.avatar(), const Avatar(AvatarAnimal.owl, 2));
       expect(await s.farmerName(), 'Harsha');
       expect(() => s.setResetHour(13), throwsRangeError);
+      expect(await s.reminderEnabled(), isFalse); // opt-in
+      expect(await s.reduceMotion(), isFalse);
+      await s.setFarmerName('A' * 40);
+      expect((await s.farmerName()).length, 24);
     });
 
     test('journal upsert keeps untouched fields', () async {

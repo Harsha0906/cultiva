@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../core/app_prefs.dart';
 
 import '../../core/router.dart';
 import '../../core/theme/text.dart';
@@ -158,7 +159,7 @@ class _TaskRow extends ConsumerWidget {
       switch (plant.stage) {
         case PlantStage.ripe:
           final coins = await farm.harvest(task);
-          unawaited(HapticFeedback.mediumImpact());
+          unawaited(AppFeedback.medium());
           if (context.mounted) {
             _toast(context, '+$coins coins from ${task.title}');
           }
@@ -170,7 +171,7 @@ class _TaskRow extends ConsumerWidget {
             await context.push(Routes.focus(task.id));
           } else {
             await farm.complete(task);
-            unawaited(HapticFeedback.lightImpact());
+            unawaited(AppFeedback.light());
           }
         case PlantStage.harvested || PlantStage.resting:
           break;

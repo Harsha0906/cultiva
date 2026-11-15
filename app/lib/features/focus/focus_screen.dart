@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../core/app_prefs.dart';
 
 import '../../core/notifications.dart';
 import '../../core/router.dart';
@@ -131,7 +132,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen>
       final next = await _focus.load(task);
       if (!mounted) return;
       if (next.status == FocusStatus.ripe) {
-        unawaited(HapticFeedback.mediumImpact());
+        unawaited(AppFeedback.medium());
         unawaited(_notify.focusStopped(task));
       }
       _apply(task, next);
@@ -252,7 +253,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen>
   Future<void> _harvest() => _guard(() async {
     final task = _task!;
     final coins = await _farm.harvest(task);
-    unawaited(HapticFeedback.mediumImpact());
+    unawaited(AppFeedback.medium());
     unawaited(_notify.focusStopped(task));
     _toast('+$coins coins from ${task.title}');
     if (mounted) context.go(Routes.farm);

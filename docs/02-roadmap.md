@@ -72,11 +72,11 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 8.1 | Today card: auto-log, mood, note | flutter-ui-patterns | ✅ |
 | 8.2 | Weekly chart and calendar of daily "farm postcards", open any past day | flutter-ui-design | ✅ |
 
-## Phase 9: Profile, settings, notifications
+## Phase 9: Profile, settings, notifications (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 9.1 | Profile: name, avatar picker (no capybara), stats | flutter-ui-patterns | ⬜ |
-| 9.2 | Settings: reset time, reminder time, sound, haptics, reduced motion; daily reminder notification | flutter-notifications | ⬜ |
+| 9.1 | Profile: name, avatar picker (no capybara), stats | flutter-ui-patterns | ✅ |
+| 9.2 | Settings: reset time, reminder time, sound, haptics, reduced motion; daily reminder notification | flutter-notifications | ✅ |
 
 ## Phase 10: Onboarding & polish
 | Step | What | Skills | Status |
