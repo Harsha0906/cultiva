@@ -78,6 +78,7 @@ flutter:
     - assets/ui/icons/
     - assets/sprites/cultiva/buildings/
     - assets/sprites/cultiva/npc/
+    - assets/sprites/cultiva/avatars/
     - assets/sprites/cultiva/props/
     - assets/sprites/cultiva/tiles/
     - assets/sprites/cultiva/fx/

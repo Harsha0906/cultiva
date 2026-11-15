@@ -4,8 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/router.dart';
 import '../../core/theme/text.dart';
 import '../../core/theme/tokens.dart';
+import '../../core/ui/avatar_portrait.dart';
 import '../../core/ui/pixel_button.dart';
-import '../../core/ui/pixel_icon.dart';
+import '../../domain/avatar.dart';
 
 /// Farm (home). Placeholder until Phase 4 adds the Flame scene.
 class FarmScreen extends StatelessWidget {
@@ -67,9 +68,7 @@ class FarmHeader extends StatelessWidget {
           PixelIconButton(
             semanticLabel: 'Profile',
             onPressed: () => context.push(Routes.profile),
-            child:
-                avatar ??
-                const PixelIcon(PixelIcons.gear, color: CultivaColors.woodDark),
+            child: avatar ?? const AvatarPortrait(Avatar.fallback),
           ),
           const Spacer(),
           Semantics(
