@@ -24,13 +24,13 @@ Status key: ✅ done · ⏳ next · ⬜ pending
 | 1.2 | Create the Flutter project, add packages (flame, riverpod, go_router, drift, flutter_local_notifications, fl_chart), set up folder structure and lint rules, `git init` | flutter-architecture, flutter-state-management | ✅ |
 | 1.3 | App shell: 4-tab nav (Farm, Tasks, Shop, Progress) plus header routes, running on the emulator | flutter-navigation, flutter-device-testing | ✅ |
 
-## Phase 2: Art & UI kit
+## Phase 2: Art & UI kit (✅ 2026-11-15)
 | Step | What | Skills | Status |
 |---|---|---|---|
-| 2.1 | Import the CraftPix packs: slice the sheets into named sprites, add an asset manifest, check licenses | spritecook-workflow-essentials (manifest conventions only, **no AI upload**) | ⬜ |
-| 2.2 | Custom 16px sprites: teal cottage, red barn, capybara NPC (placeholder), name stakes, dormant crop variants, sparkle/harvest/coin effects | ui-ux-pro-max | ⬜ |
-| 2.3 | UI kit: 9-slice panels, wood/teal/paper buttons, pixel nav and header icons, fonts (Pixelify Sans + Nunito), theme tokens | flutter-ui-design, design-system | ⬜ |
-| 2.4 | Player avatar set (style decided by the founder) | flutter-ui-design | ⬜ |
+| 2.1 | Import the CraftPix packs: slice the sheets into named sprites, add an asset manifest, check licenses | spritecook-workflow-essentials (manifest conventions only, **no AI upload**) | ✅ |
+| 2.2 | Custom 16px sprites: teal cottage, red barn, capybara NPC (placeholder), name stakes, dormant crop variants, sparkle/harvest/coin effects | ui-ux-pro-max | ✅ |
+| 2.3 | UI kit: 9-slice panels, wood/teal/paper buttons, pixel nav and header icons, fonts (Pixelify Sans + Nunito), theme tokens | flutter-ui-design, design-system | ✅ |
+| 2.4 | Player avatar set (style decided by the founder) | flutter-ui-design | ✅ |
 
 ## Phase 3: Data & core logic
 | Step | What | Skills | Status |
