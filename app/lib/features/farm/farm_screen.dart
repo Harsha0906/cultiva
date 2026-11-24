@@ -25,7 +25,8 @@ import '../../game/farm_layout.dart';
 import '../tasks/plant_task_sheet.dart';
 import 'farm_view.dart';
 
-const kGrass = Color(0xFF96C55F);
+/// Matches the farm grass tile (user art), so no band shows around the scene.
+const kGrass = Color(0xFF1EBC73);
 
 /// Farm (home): Flame scene + Flutter overlays (labels, taps, bubble, Next up).
 class FarmScreen extends ConsumerStatefulWidget {
