@@ -82,6 +82,7 @@ flutter:
     - assets/sprites/cultiva/props/
     - assets/sprites/cultiva/tiles/
     - assets/sprites/cultiva/fx/
+    - assets/sprites/farm/
     - assets/sfx/
     # Generated from CraftPix packs by tools/art/build_pack_assets.py (git-ignored).
     - assets/sprites/pack/

@@ -7,40 +7,41 @@ import '../domain/task.dart';
 /// (192 x 288 world). Used by the Flame renderer *and* Flutter overlays/taps.
 abstract final class FarmLayout {
   static const worldW = 192.0;
-  static const baseH = 288.0;
+  static const baseH = 320.0;
 
   /// Extra art rows that fill a tall screen (set by [FarmViewport]). The
   /// rows are spread out instead of leaving empty grass above and below.
   static double extraH = 0;
   static double get worldH => baseH + extraH;
 
-  // How far each band moves down: buildings, plot A, plot B, pond row.
+  // How far each band moves down: house, plot A, plot B, pond row.
   static double get _top => (extraH * 0.10).roundToDouble();
   static double get _a => (extraH * 0.40).roundToDouble();
   static double get _b => (extraH * 0.70).roundToDouble();
   static double get _end => extraH;
 
-  static Rect get barn => Rect.fromLTWH(6, 8 + _top, 72, 72);
-  static Rect get home => Rect.fromLTWH(106, 4 + _top, 80, 80);
-  static Offset get oakAt => Offset(72, -26 + _top);
-  static Offset get fernAt => Offset(80, 70 + _top);
+  /// The farmhouse (user's art, half size). It is also the storage barn.
+  static Rect get home => Rect.fromLTWH(50, 2 + _top, 93, 127);
+  static Rect get barn => home;
+  static Offset get treeAt => Offset(0, 46 + _top);
+  static Offset get bushAt => Offset(150, 104 + _top);
 
-  /// Cobble path: from the cottage door down, right, then down the right edge.
+  /// Dirt path: from the door down, right, then down the right edge.
   static List<Rect> get paths => [
-    Rect.fromLTWH(138, 78 + _top, 16, 28 + _a - _top),
-    Rect.fromLTWH(138, 92 + _a, 52, 14),
-    Rect.fromLTWH(172, 92 + _a, 18, 196 + _end - _a),
+    Rect.fromLTWH(92, 124 + _top, 16, 10 + _a - _top),
+    Rect.fromLTWH(92, 132 + _a, 98, 14),
+    Rect.fromLTWH(172, 132 + _a, 18, baseH - 132 + _end - _a),
   ];
 
-  static Rect get plotA => Rect.fromLTWH(6, 112 + _a, 160, 48);
-  static Rect get plotB => Rect.fromLTWH(6, 188 + _b, 160, 48);
-  static Rect get pond => Rect.fromLTWH(8, 246 + _end, 56, 36);
+  static Rect get plotA => Rect.fromLTWH(6, 152 + _a, 160, 48);
+  static Rect get plotB => Rect.fromLTWH(6, 226 + _b, 160, 48);
+  static Rect get pond => Rect.fromLTWH(8, 282 + _end, 56, 34);
 
   /// Bottom-centre of each decoration spot (between the pond and the path).
   static List<Offset> get decoSpots => [
-    Offset(82, 286 + _end),
-    Offset(118, 286 + _end),
-    Offset(154, 286 + _end),
+    Offset(82, 318 + _end),
+    Offset(118, 318 + _end),
+    Offset(154, 318 + _end),
   ];
 
   /// Tap/outline area of a decoration spot.
@@ -52,8 +53,8 @@ abstract final class FarmLayout {
 
   /// Capybara walks the right-hand path between these y values.
   static const capyX = 181.0;
-  static double get capyMinY => 104.0 + _a;
-  static double get capyMaxY => 280.0 + _end;
+  static double get capyMinY => 140.0 + _a;
+  static double get capyMaxY => 312.0 + _end;
   static const capySize = Size(22, 16);
 
   static Rect bed(PlotKind plot) => plot == PlotKind.daily ? plotA : plotB;

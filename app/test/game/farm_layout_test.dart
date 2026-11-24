@@ -31,7 +31,7 @@ void main() {
 
   group('hit testing', () {
     // Built per use: a viewport also sets the farm's extra height.
-    FarmViewport vp() => FarmViewport(const Size(384, 576), 1); // 2x, exact
+    FarmViewport vp() => FarmViewport(const Size(384, 640), 1); // 2x, exact
 
     Offset at(double x, double y) => vp().toScreen(Offset(x, y));
     setUp(vp); // reset the shared extra height before each test
@@ -50,11 +50,11 @@ void main() {
     });
 
     test('buildings and empty grass', () {
-      expect(vp().hitTest(at(40, 40)).kind, FarmHitKind.barn);
-      expect(vp().hitTest(at(150, 40)).kind, FarmHitKind.home);
-      expect(vp().hitTest(at(100, 86)).kind, FarmHitKind.none);
+      // The farmhouse doubles as the storage barn.
+      expect(vp().hitTest(at(96, 60)).kind, FarmHitKind.barn);
+      expect(vp().hitTest(at(20, 20)).kind, FarmHitKind.none);
       expect(
-        vp().hitTest(at(118, 270)),
+        vp().hitTest(at(118, 300)),
         const FarmHit(FarmHitKind.decoSpot, slot: 1),
       );
     });

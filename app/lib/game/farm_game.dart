@@ -64,22 +64,21 @@ class FarmGame extends FlameGame {
         _img[key] = await images.load(path);
 
     const cultiva = 'sprites/cultiva';
+    const farm = 'sprites/farm';
     await Future.wait([
-      load('barn', '$cultiva/buildings/barn_red.png'),
-      load('home', '$cultiva/buildings/cottage_teal.png'),
-      load('soil', '$cultiva/tiles/soil_bed.png'),
-      load('pond', '$cultiva/tiles/pond.png'),
-      load('cobble', '$cultiva/tiles/cobble.png'),
+      load('home', '$farm/house.png'),
+      load('tree', '$farm/tree.png'),
+      load('bushF', '$farm/bush.png'),
+      load('grass', '$farm/grass.png'),
+      load('path', '$farm/path.png'),
+      load('water', '$farm/water.png'),
+      load('soil', '$farm/soil.png'),
       load('stake', '$cultiva/props/stake.png'),
       load('capy', '$cultiva/npc/capybara.png'),
       load('sparkle', '$cultiva/fx/sparkle.png'),
       load('coin', '$cultiva/fx/coin.png'),
       load('leaf', '$cultiva/fx/leaf.png'),
       load('dust', '$cultiva/fx/dust.png'),
-      load('oak', 'sprites/pack/trees/oak_small.png'),
-      load('bush', 'sprites/pack/props/bush_dark_small.png'),
-      load('fern', 'sprites/pack/props/fern.png'),
-      load('mushroom', 'sprites/pack/props/mushroom_small.png'),
     ]);
 
     final manifest = jsonDecode(
@@ -91,15 +90,10 @@ class FarmGame extends FlameGame {
       await load('crop:$key', 'sprites/pack/${m['file']}');
       _cropH[key] = m['frameH'] as int;
     }
-    final details = <ui.Image>[];
-    final grass = (manifest['grass_details'] as List).cast<String>();
-    for (var i = 0; i < grass.length; i += 3) {
-      details.add(await images.load('sprites/pack/${grass[i]}'));
-    }
-    final dirt = (manifest['dirt_details'] as List).cast<String>();
-    for (var i = 0; i < dirt.length; i += 9) {
-      details.add(await images.load('sprites/pack/${dirt[i]}'));
-    }
+    // Small grass details: flowers, pebbles and tufts from the farm art.
+    final details = [
+      for (var i = 0; i < 9; i++) await images.load('$farm/detail_$i.png'),
+    ];
     for (final item in kShopCatalogue) {
       await load('deco:${item.id}', 'sprites/pack/${item.sprite}.png');
     }
@@ -114,9 +108,11 @@ class FarmGame extends FlameGame {
     final h = FarmLayout.worldH;
     final rec = ui.PictureRecorder();
     final c = ui.Canvas(rec, ui.Rect.fromLTWH(0, 0, w, h));
-    c.drawRect(
+    _tile(
+      c,
+      _img['grass']!,
+      const ui.Rect.fromLTWH(0, 0, 32, 32),
       ui.Rect.fromLTWH(0, 0, w, h),
-      ui.Paint()..color = const ui.Color(0xFF96C55F),
     );
 
     final blocked = [
@@ -128,7 +124,7 @@ class FarmGame extends FlameGame {
       FarmLayout.pond.inflate(2),
     ];
     final rng = math.Random(7);
-    for (var i = 0; i < 70 && details.isNotEmpty; i++) {
+    for (var i = 0; i < 40 && details.isNotEmpty; i++) {
       final d = details[rng.nextInt(details.length)];
       final at = ui.Offset(
         rng.nextInt((w - d.width).toInt()).toDouble(),
@@ -139,17 +135,21 @@ class FarmGame extends FlameGame {
       c.drawImage(d, at, _pixel);
     }
 
-    // framing props behind buildings
-    _drawAt(c, 'oak', FarmLayout.oakAt);
-    _drawAt(c, 'fern', FarmLayout.fernAt);
-
     for (final p in FarmLayout.paths) {
-      _tile(c, _img['cobble']!, const ui.Rect.fromLTWH(0, 0, 16, 16), p);
+      _tile(c, _img['path']!, const ui.Rect.fromLTWH(0, 0, 32, 32), p);
     }
     _nineTile(c, _img['soil']!, FarmLayout.plotA);
     _nineTile(c, _img['soil']!, FarmLayout.plotB);
-    _nineTile(c, _img['pond']!, FarmLayout.pond);
-    _drawAt(c, 'barn', FarmLayout.barn.topLeft);
+    final pond = FarmLayout.pond;
+    _tile(c, _img['water']!, const ui.Rect.fromLTWH(0, 0, 32, 32), pond);
+    c.drawRect(
+      pond.deflate(0.5),
+      ui.Paint()
+        ..style = ui.PaintingStyle.stroke
+        ..color = const ui.Color(0xFF2F5E9E),
+    );
+    _drawAt(c, 'tree', FarmLayout.treeAt);
+    _drawAt(c, 'bushF', FarmLayout.bushAt);
     _drawAt(c, 'home', FarmLayout.home.topLeft);
     return rec.endRecording().toImageSync(w.toInt(), h.toInt());
   }
@@ -245,6 +245,22 @@ class FarmGame extends FlameGame {
     canvas.save();
     canvas.translate(vp.offset.dx, vp.offset.dy);
     canvas.scale(vp.scale);
+    // Grass also fills the side margins (the farm is a whole-pixel width).
+    final g = _img['grass'];
+    if (g != null) {
+      final ox = (vp.offset.dx / vp.scale / 32).ceil() * 32.0;
+      _tile(
+        canvas,
+        g,
+        const ui.Rect.fromLTWH(0, 0, 32, 32),
+        ui.Rect.fromLTWH(
+          -ox,
+          0,
+          vp.size.width / vp.scale + 2 * ox,
+          FarmLayout.worldH,
+        ),
+      );
+    }
     canvas.drawImage(bg, ui.Offset.zero, _pixel);
     _drawPlants(canvas);
     _drawDecorations(canvas);
