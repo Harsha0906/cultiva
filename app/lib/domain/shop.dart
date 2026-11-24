@@ -1,7 +1,13 @@
 /// Cosmetic decorations bought with coins. Sprites come from the CraftPix
 /// house pack (assets/sprites/pack/props|trees). All fit a 36px-wide spot.
 final class ShopItem {
-  const ShopItem(this.id, this.name, this.price, this.sprite);
+  const ShopItem(
+    this.id,
+    this.name,
+    this.price,
+    this.sprite, {
+    this.animal = false,
+  });
   final String id;
   final String name;
   final int price;
@@ -9,7 +15,12 @@ final class ShopItem {
   /// Path under assets/sprites/pack/ (without .png).
   final String sprite;
 
-  String get asset => 'assets/sprites/pack/$sprite.png';
+  /// Animals live in the pen by the house; they are never placed on a spot.
+  final bool animal;
+
+  String get asset => animal
+      ? 'assets/sprites/farm/$sprite.png'
+      : 'assets/sprites/pack/$sprite.png';
 }
 
 const kShopCatalogue = [
@@ -25,6 +36,9 @@ const kShopCatalogue = [
   ShopItem('mushroom_big', 'Giant toadstool', 110, 'props/mushroom_big'),
   ShopItem('apple_bush', 'Apple bush', 130, 'props/apple_bush'),
   ShopItem('well', 'Wishing well', 200, 'props/well'),
+  ShopItem('chicken', 'Chicken', 60, 'animal_chicken', animal: true),
+  ShopItem('goat', 'Goat', 120, 'animal_goat', animal: true),
+  ShopItem('cow', 'Cow', 180, 'animal_cow', animal: true),
 ];
 
 ShopItem? shopItem(String id) {

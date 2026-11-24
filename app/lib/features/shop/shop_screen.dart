@@ -183,14 +183,18 @@ class _ItemCard extends ConsumerWidget {
         behavior: SnackBarBehavior.floating,
         backgroundColor: CultivaColors.ink,
         content: Text(
-          '${item.name} is in your barn.',
+          item.animal
+              ? '${item.name} moved into the pen!'
+              : '${item.name} is in your barn.',
           style: const TextStyle(fontFamily: kBodyFont, color: Colors.white),
         ),
-        action: SnackBarAction(
-          label: 'Place it now',
-          textColor: CultivaColors.gold,
-          onPressed: () => showSpotPicker(context, item),
-        ),
+        action: item.animal
+            ? null
+            : SnackBarAction(
+                label: 'Place it now',
+                textColor: CultivaColors.gold,
+                onPressed: () => showSpotPicker(context, item),
+              ),
       ),
     );
   }

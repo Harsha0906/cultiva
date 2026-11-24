@@ -74,6 +74,9 @@ class ShopService {
     if (!await owns(itemId)) {
       throw const ShopException('Buy it in the shop first.');
     }
+    if (shopItem(itemId)?.animal ?? false) {
+      throw const ShopException('Animals live in the pen.');
+    }
     await (_db.update(_db.inventory)..where((i) => i.placedSpot.equals(spot)))
         .write(const InventoryCompanion(placedSpot: Value(null)));
     await (_db.update(_db.inventory)..where((i) => i.itemId.equals(itemId)))

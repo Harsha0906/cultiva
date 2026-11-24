@@ -20,16 +20,28 @@ abstract final class FarmLayout {
   static double get _b => (extraH * 0.70).roundToDouble();
   static double get _end => extraH;
 
-  /// The farmhouse (user's art, half size). It is also the storage barn.
-  static Rect get home => Rect.fromLTWH(50, 2 + _top, 93, 127);
+  /// The farmhouse (user's house kit), on the right. It is also the barn.
+  static Rect get home => Rect.fromLTWH(116, 6 + _top, 72, 95);
   static Rect get barn => home;
-  static Offset get treeAt => Offset(0, 46 + _top);
-  static Offset get bushAt => Offset(150, 104 + _top);
+
+  /// Where the tip bubble points (the front door).
+  static Offset get doorAt => Offset(164, 104 + _top);
+
+  /// Fenced animal pen next to the house; bought animals live here.
+  static Rect get pen => Rect.fromLTWH(8, 8 + _top, 74, 93);
+  static Offset get treeAt => Offset(82, 54 + _top);
+
+  /// Bottom-centre of each animal inside the pen (in purchase order).
+  static List<Offset> get animalSpots => [
+    Offset(26, 50 + _top),
+    Offset(58, 50 + _top),
+    Offset(42, 74 + _top),
+  ];
 
   /// Dirt path: from the door down, right, then down the right edge.
   static List<Rect> get paths => [
-    Rect.fromLTWH(92, 124 + _top, 16, 10 + _a - _top),
-    Rect.fromLTWH(92, 132 + _a, 98, 14),
+    Rect.fromLTWH(156, 98 + _top, 16, 34 + _a - _top),
+    Rect.fromLTWH(156, 132 + _a, 34, 14),
     Rect.fromLTWH(172, 132 + _a, 18, baseH - 132 + _end - _a),
   ];
 

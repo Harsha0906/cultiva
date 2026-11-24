@@ -33,6 +33,9 @@ class FarmGame extends FlameGame {
   /// Placed decorations: spot index -> ShopItem id.
   Map<int, String> decorations = const {};
 
+  /// Owned animals (shop ids), drawn in the pen.
+  List<String> animals = const [];
+
   /// Show dashed outlines on empty spots (player owns something unplaced).
   bool showEmptySpots = false;
   bool reduceMotion;
@@ -50,9 +53,6 @@ class FarmGame extends FlameGame {
   double _t = 0;
 
   // capybara walk state
-  double _capyY = 200;
-  double _dir = 1;
-  double _pause = 1.5;
   @override
   @override
   ui.Color backgroundColor() => const ui.Color(0x00000000);
@@ -66,15 +66,17 @@ class FarmGame extends FlameGame {
     const cultiva = 'sprites/cultiva';
     const farm = 'sprites/farm';
     await Future.wait([
-      load('home', '$farm/house.png'),
-      load('tree', '$farm/tree.png'),
-      load('bushF', '$farm/bush.png'),
+      load('house', '$farm/house2.png'),
+      load('pen', '$farm/pen.png'),
+      load('tree', '$farm/tree_mid.png'),
+      for (var i = 0; i < 4; i++) load('stone$i', '$farm/stone_$i.png'),
+      for (final a in ['chicken', 'goat', 'cow'])
+        load('animal:$a', '$farm/animal_${a}_strip.png'),
       load('grass', '$farm/grass.png'),
       load('path', '$farm/path.png'),
       load('water', '$farm/water.png'),
       load('soil', '$farm/soil.png'),
       load('stake', '$cultiva/props/stake.png'),
-      load('capy', '$cultiva/npc/capybara.png'),
       load('sparkle', '$cultiva/fx/sparkle.png'),
       load('coin', '$cultiva/fx/coin.png'),
       load('leaf', '$cultiva/fx/leaf.png'),
@@ -94,7 +96,7 @@ class FarmGame extends FlameGame {
     final details = [
       for (var i = 0; i < 9; i++) await images.load('$farm/detail_$i.png'),
     ];
-    for (final item in kShopCatalogue) {
+    for (final item in kShopCatalogue.where((i) => !i.animal)) {
       await load('deco:${item.id}', 'sprites/pack/${item.sprite}.png');
     }
     _details = details;
@@ -116,8 +118,9 @@ class FarmGame extends FlameGame {
     );
 
     final blocked = [
-      FarmLayout.barn,
       FarmLayout.home,
+      FarmLayout.pen.inflate(4),
+      FarmLayout.treeAt & const ui.Size(35, 47),
       ...FarmLayout.paths,
       FarmLayout.plotA.inflate(3),
       FarmLayout.plotB.inflate(3),
@@ -142,16 +145,39 @@ class FarmGame extends FlameGame {
     _nineTile(c, _img['soil']!, FarmLayout.plotB);
     final pond = FarmLayout.pond;
     _tile(c, _img['water']!, const ui.Rect.fromLTWH(0, 0, 32, 32), pond);
-    c.drawRect(
-      pond.deflate(0.5),
-      ui.Paint()
-        ..style = ui.PaintingStyle.stroke
-        ..color = const ui.Color(0xFF2F5E9E),
-    );
+    _pondStones(c, pond);
+    _drawAt(c, 'pen', FarmLayout.pen.topLeft);
     _drawAt(c, 'tree', FarmLayout.treeAt);
-    _drawAt(c, 'bushF', FarmLayout.bushAt);
-    _drawAt(c, 'home', FarmLayout.home.topLeft);
+    _drawAt(c, 'house', FarmLayout.home.topLeft);
     return rec.endRecording().toImageSync(w.toInt(), h.toInt());
+  }
+
+  /// Ring of the pack's stones around the pond, so it reads as a real pond.
+  void _pondStones(ui.Canvas c, ui.Rect r) {
+    final small = [
+      _img['stone1'],
+      _img['stone2'],
+      _img['stone3'],
+    ].whereType<ui.Image>().toList();
+    if (small.isEmpty) return;
+    var i = 0;
+    void put(double x, double y) {
+      final s = small[i++ % small.length];
+      c.drawImage(s, ui.Offset(x - s.width / 2, y - s.height / 2), _pixel);
+    }
+
+    for (var x = r.left; x <= r.right; x += 9) {
+      put(x, r.top);
+      put(x, r.bottom);
+    }
+    for (var y = r.top + 9; y < r.bottom; y += 9) {
+      put(r.left, y);
+      put(r.right, y);
+    }
+    final big = _img['stone0'];
+    if (big != null) {
+      c.drawImage(big, ui.Offset(r.right - 14, r.bottom - 16), _pixel);
+    }
   }
 
   void _drawAt(ui.Canvas c, String key, ui.Offset at) {
@@ -213,22 +239,8 @@ class FarmGame extends FlameGame {
       p.vel += ui.Offset(0, 70 * dt);
     }
     _parts.removeWhere((p) => p.age >= p.life);
-    if (reduceMotion) {
-      _capyY = 100;
-    } else if (_pause > 0) {
-      _pause -= dt;
-    } else {
-      _capyY += _dir * 12 * dt;
-      if (_capyY <= FarmLayout.capyMinY || _capyY >= FarmLayout.capyMaxY) {
-        _capyY = _capyY.clamp(FarmLayout.capyMinY, FarmLayout.capyMaxY);
-        _dir = -_dir;
-        _pause = 2 + _rng.nextDouble() * 3;
-      } else if (_rng.nextDouble() < dt * 0.15) {
-        _pause = 2 + _rng.nextDouble() * 3;
-        if (_rng.nextBool()) _dir = -_dir;
-      }
-    }
-    final p = ui.Offset(FarmLayout.capyX, _capyY.roundToDouble());
+    // The capybara is not shown on the farm; tips point at the front door.
+    final p = FarmLayout.doorAt;
     if (p != capyPosition.value) capyPosition.value = p;
   }
 
@@ -264,7 +276,7 @@ class FarmGame extends FlameGame {
     canvas.drawImage(bg, ui.Offset.zero, _pixel);
     _drawPlants(canvas);
     _drawDecorations(canvas);
-    _drawCapy(canvas);
+    _drawAnimals(canvas);
     _drawParticles(canvas);
     canvas.restore();
   }
@@ -406,33 +418,23 @@ class FarmGame extends FlameGame {
     c.drawRect(ui.Rect.fromLTWH(cx, cy - 3, 1, 7), p);
   }
 
-  void _drawCapy(ui.Canvas c) {
-    final img = _img['capy'];
-    if (img == null) return;
-    final pos = capyPosition.value;
-    final walking = !reduceMotion && _pause <= 0;
-    final int frame;
-    if (walking) {
-      frame = 2 + (_t * 8).floor() % 4;
-    } else {
-      frame = (_t % 3.2) < 0.15 ? 1 : 0; // occasional blink
+  void _drawAnimals(ui.Canvas c) {
+    final spots = FarmLayout.animalSpots;
+    for (var i = 0; i < animals.length && i < spots.length; i++) {
+      final img = _img['animal:${animals[i]}'];
+      if (img == null) continue;
+      // 4-frame idle; each animal is offset so they don't move in sync.
+      final frame = reduceMotion ? 0 : ((_t * 4).floor() + i) % 4;
+      final base = spots[i];
+      c.drawImageRect(
+        img,
+        ui.Rect.fromLTWH(frame * 40.0, 0, 40, 40),
+        ui.Rect.fromLTWH((base.dx - 20).floorToDouble(), base.dy - 34, 40, 40),
+        _pixel,
+      );
     }
-    final facingLeft = walking && _dir < 0;
-    final dst = ui.Rect.fromCenter(center: pos, width: 22, height: 16);
-    c.save();
-    if (facingLeft) {
-      c.translate(pos.dx, 0);
-      c.scale(-1, 1);
-      c.translate(-pos.dx, 0);
-    }
-    c.drawImageRect(
-      img,
-      ui.Rect.fromLTWH(frame * 22.0, 0, 22, 16),
-      dst,
-      _pixel,
-    );
-    c.restore();
   }
+
 }
 
 class _Particle {

@@ -191,7 +191,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
 
   void _onTap(Offset pos, FarmViewport vp, FarmView? view) {
     if (view == null) return;
-    final hit = vp.hitTest(pos, capybara: _game.capyPosition.value);
+    final hit = vp.hitTest(pos);
     switch (hit.kind) {
       case FarmHitKind.cell:
         unawaited(_cellTap(view, hit.plot!, hit.slot!));
@@ -212,6 +212,7 @@ class _FarmScreenState extends ConsumerState<FarmScreen> {
       ..reduceMotion = MediaQuery.disableAnimationsOf(context)
       ..plants = view?.plants ?? const []
       ..decorations = view?.decorations ?? const {}
+      ..animals = view?.animals ?? const []
       ..showEmptySpots = view?.hasUnplaced ?? false;
     final tint = tintFor(DateTime.now().hour);
 

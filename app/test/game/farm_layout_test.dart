@@ -51,7 +51,7 @@ void main() {
 
     test('buildings and empty grass', () {
       // The farmhouse doubles as the storage barn.
-      expect(vp().hitTest(at(96, 60)).kind, FarmHitKind.barn);
+      expect(vp().hitTest(at(150, 50)).kind, FarmHitKind.barn);
       expect(vp().hitTest(at(20, 20)).kind, FarmHitKind.none);
       expect(
         vp().hitTest(at(118, 300)),

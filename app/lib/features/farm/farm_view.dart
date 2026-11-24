@@ -20,6 +20,7 @@ final class FarmView {
     this.decorations = const {},
     this.hasUnplaced = false,
     this.finishedOffFarm = 0,
+    this.animals = const [],
   });
 
   final FarmDay day;
@@ -36,6 +37,9 @@ final class FarmView {
   /// One-off to-dos finished today that already left the farm (harvested
   /// to-dos are archived). They still count toward "done today".
   final int finishedOffFarm;
+
+  /// Owned animals (shop ids), shown in the pen.
+  final List<String> animals;
 
   Iterable<PlantView> get due =>
       plants.where((p) => p.stage != PlantStage.resting);
@@ -107,7 +111,11 @@ Future<FarmView> loadFarmView(FarmService farm, [ShopService? shop]) async {
       for (final o in owned)
         if (o.spot != null) o.spot!: o.item.id,
     },
-    hasUnplaced: owned.any((o) => o.spot == null),
+    hasUnplaced: owned.any((o) => o.spot == null && !o.item.animal),
+    animals: [
+      for (final o in owned)
+        if (o.item.animal) o.item.id,
+    ],
   );
 }
 

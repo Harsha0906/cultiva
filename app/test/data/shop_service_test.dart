@@ -3,6 +3,7 @@ import 'package:cultiva/data/farm_service.dart';
 import 'package:cultiva/data/shop_service.dart';
 import 'package:cultiva/domain/farm_day.dart';
 import 'package:cultiva/domain/rewards.dart';
+import 'package:cultiva/features/farm/farm_view.dart';
 import 'package:drift/drift.dart' show driftRuntimeOptions;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -32,6 +33,19 @@ void main() {
     expect(await farm.progress.balance(), 30);
     expect((await shop.owned()).single.item.id, 'crates');
     expect((await shop.owned()).single.spot, isNull);
+  });
+
+  test('animals: bought into the pen, never placed on a spot', () async {
+    await earn(200);
+    await shop.buy('chicken'); // 60
+    expect(await farm.progress.balance(), 140);
+    await expectLater(
+      shop.place('chicken', 0),
+      throwsA(isA<ShopException>()),
+    );
+    final view = await loadFarmView(farm, shop);
+    expect(view.animals, ['chicken']);
+    expect(view.hasUnplaced, isFalse); // no "place it" nudge for animals
   });
 
   test('not enough coins: refused, nothing changes', () async {

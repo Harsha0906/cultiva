@@ -137,7 +137,7 @@ class BarnScreen extends ConsumerWidget {
               spacing: Space.sm,
               runSpacing: Space.sm,
               children: [
-                for (final o in shop.owned)
+                for (final o in shop.owned.where((o) => !o.item.animal))
                   Semantics(
                     button: true,
                     label:
