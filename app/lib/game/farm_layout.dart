@@ -7,27 +7,40 @@ import '../domain/task.dart';
 /// (192 x 288 world). Used by the Flame renderer *and* Flutter overlays/taps.
 abstract final class FarmLayout {
   static const worldW = 192.0;
-  static const worldH = 288.0;
+  static const baseH = 288.0;
 
-  static const barn = Rect.fromLTWH(6, 8, 72, 72);
-  static const home = Rect.fromLTWH(106, 4, 80, 80);
+  /// Extra art rows that fill a tall screen (set by [FarmViewport]). The
+  /// rows are spread out instead of leaving empty grass above and below.
+  static double extraH = 0;
+  static double get worldH => baseH + extraH;
+
+  // How far each band moves down: buildings, plot A, plot B, pond row.
+  static double get _top => (extraH * 0.10).roundToDouble();
+  static double get _a => (extraH * 0.40).roundToDouble();
+  static double get _b => (extraH * 0.70).roundToDouble();
+  static double get _end => extraH;
+
+  static Rect get barn => Rect.fromLTWH(6, 8 + _top, 72, 72);
+  static Rect get home => Rect.fromLTWH(106, 4 + _top, 80, 80);
+  static Offset get oakAt => Offset(72, -26 + _top);
+  static Offset get fernAt => Offset(80, 70 + _top);
 
   /// Cobble path: from the cottage door down, right, then down the right edge.
-  static const paths = [
-    Rect.fromLTWH(138, 78, 16, 28),
-    Rect.fromLTWH(138, 92, 52, 14),
-    Rect.fromLTWH(172, 92, 18, 196),
+  static List<Rect> get paths => [
+    Rect.fromLTWH(138, 78 + _top, 16, 28 + _a - _top),
+    Rect.fromLTWH(138, 92 + _a, 52, 14),
+    Rect.fromLTWH(172, 92 + _a, 18, 196 + _end - _a),
   ];
 
-  static const plotA = Rect.fromLTWH(6, 112, 160, 48);
-  static const plotB = Rect.fromLTWH(6, 188, 160, 48);
-  static const pond = Rect.fromLTWH(8, 246, 56, 36);
+  static Rect get plotA => Rect.fromLTWH(6, 112 + _a, 160, 48);
+  static Rect get plotB => Rect.fromLTWH(6, 188 + _b, 160, 48);
+  static Rect get pond => Rect.fromLTWH(8, 246 + _end, 56, 36);
 
   /// Bottom-centre of each decoration spot (between the pond and the path).
-  static const decoSpots = [
-    Offset(82, 286),
-    Offset(118, 286),
-    Offset(154, 286),
+  static List<Offset> get decoSpots => [
+    Offset(82, 286 + _end),
+    Offset(118, 286 + _end),
+    Offset(154, 286 + _end),
   ];
 
   /// Tap/outline area of a decoration spot.
@@ -39,8 +52,8 @@ abstract final class FarmLayout {
 
   /// Capybara walks the right-hand path between these y values.
   static const capyX = 181.0;
-  static const capyMinY = 104.0;
-  static const capyMaxY = 280.0;
+  static double get capyMinY => 104.0 + _a;
+  static double get capyMaxY => 280.0 + _end;
   static const capySize = Size(22, 16);
 
   static Rect bed(PlotKind plot) => plot == PlotKind.daily ? plotA : plotB;
@@ -103,9 +116,11 @@ final class FarmViewport {
       1,
       math.min(
         (physW / FarmLayout.worldW).floor(),
-        (physH / FarmLayout.worldH).floor(),
+        (physH / FarmLayout.baseH).floor(),
       ),
     );
+    // Fill the whole height: whatever rows are left become extra farm space.
+    FarmLayout.extraH = math.max(0, (physH / s).floor() - FarmLayout.baseH);
     final scale = s / devicePixelRatio;
     final offset = Offset(
       ((size.width - FarmLayout.worldW * scale) / 2).floorToDouble(),

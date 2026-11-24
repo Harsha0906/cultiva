@@ -27,6 +27,7 @@ class FarmGame extends FlameGame {
   FarmGame({this.reduceMotion = false});
 
   FarmViewport? viewport;
+  List<ui.Image>? _details;
   List<PlantView> plants = const [];
 
   /// Placed decorations: spot index -> ShopItem id.
@@ -102,17 +103,19 @@ class FarmGame extends FlameGame {
     for (final item in kShopCatalogue) {
       await load('deco:${item.id}', 'sprites/pack/${item.sprite}.png');
     }
+    _details = details;
     _background = _buildBackground(details);
   }
 
   // ---------------------------------------------------------------- static layer
 
   ui.Image _buildBackground(List<ui.Image> details) {
-    const w = FarmLayout.worldW, h = FarmLayout.worldH;
+    const w = FarmLayout.worldW;
+    final h = FarmLayout.worldH;
     final rec = ui.PictureRecorder();
-    final c = ui.Canvas(rec, const ui.Rect.fromLTWH(0, 0, w, h));
+    final c = ui.Canvas(rec, ui.Rect.fromLTWH(0, 0, w, h));
     c.drawRect(
-      const ui.Rect.fromLTWH(0, 0, w, h),
+      ui.Rect.fromLTWH(0, 0, w, h),
       ui.Paint()..color = const ui.Color(0xFF96C55F),
     );
 
@@ -137,8 +140,8 @@ class FarmGame extends FlameGame {
     }
 
     // framing props behind buildings
-    _drawAt(c, 'oak', const ui.Offset(72, -26));
-    _drawAt(c, 'fern', const ui.Offset(80, 70));
+    _drawAt(c, 'oak', FarmLayout.oakAt);
+    _drawAt(c, 'fern', FarmLayout.fernAt);
 
     for (final p in FarmLayout.paths) {
       _tile(c, _img['cobble']!, const ui.Rect.fromLTWH(0, 0, 16, 16), p);
@@ -233,8 +236,12 @@ class FarmGame extends FlameGame {
   void render(ui.Canvas canvas) {
     super.render(canvas);
     final vp = viewport;
-    final bg = _background;
+    var bg = _background;
     if (vp == null || bg == null) return;
+    // The screen height changed the farm's height: redraw the static layer.
+    if (bg.height != FarmLayout.worldH.toInt() && _details != null) {
+      bg = _background = _buildBackground(_details!);
+    }
     canvas.save();
     canvas.translate(vp.offset.dx, vp.offset.dy);
     canvas.scale(vp.scale);

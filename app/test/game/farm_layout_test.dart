@@ -30,29 +30,31 @@ void main() {
   });
 
   group('hit testing', () {
-    final vp = FarmViewport(const Size(384, 576), 1); // exactly 2x, no offset
+    // Built per use: a viewport also sets the farm's extra height.
+    FarmViewport vp() => FarmViewport(const Size(384, 576), 1); // 2x, exact
 
-    Offset at(double x, double y) => vp.toScreen(Offset(x, y));
+    Offset at(double x, double y) => vp().toScreen(Offset(x, y));
+    setUp(vp); // reset the shared extra height before each test
 
     test('finds plot cells by slot', () {
       final c = FarmLayout.plantBase(PlotKind.daily, 3);
       expect(
-        vp.hitTest(at(c.dx, c.dy - 4)),
+        vp().hitTest(at(c.dx, c.dy - 4)),
         const FarmHit(FarmHitKind.cell, plot: PlotKind.daily, slot: 3),
       );
       final b = FarmLayout.plantBase(PlotKind.todo, 0);
       expect(
-        vp.hitTest(at(b.dx, b.dy)),
+        vp().hitTest(at(b.dx, b.dy)),
         const FarmHit(FarmHitKind.cell, plot: PlotKind.todo, slot: 0),
       );
     });
 
     test('buildings and empty grass', () {
-      expect(vp.hitTest(at(40, 40)).kind, FarmHitKind.barn);
-      expect(vp.hitTest(at(150, 40)).kind, FarmHitKind.home);
-      expect(vp.hitTest(at(100, 86)).kind, FarmHitKind.none);
+      expect(vp().hitTest(at(40, 40)).kind, FarmHitKind.barn);
+      expect(vp().hitTest(at(150, 40)).kind, FarmHitKind.home);
+      expect(vp().hitTest(at(100, 86)).kind, FarmHitKind.none);
       expect(
-        vp.hitTest(at(118, 270)),
+        vp().hitTest(at(118, 270)),
         const FarmHit(FarmHitKind.decoSpot, slot: 1),
       );
     });
@@ -60,10 +62,10 @@ void main() {
     test('capybara wins over what is behind it', () {
       const capy = Offset(181, 150);
       expect(
-        vp.hitTest(at(181, 150), capybara: capy).kind,
+        vp().hitTest(at(181, 150), capybara: capy).kind,
         FarmHitKind.capybara,
       );
-      expect(vp.hitTest(at(181, 150)).kind, FarmHitKind.none);
+      expect(vp().hitTest(at(181, 150)).kind, FarmHitKind.none);
     });
 
     test('cells are at least 48dp wide on a phone', () {
